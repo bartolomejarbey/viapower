@@ -107,3 +107,20 @@ model Revision {
   data       String
   createdAt  DateTime @default(now())
 }
+
+/// Offers (cenové nabídky) for the PDF generator. The full validated offer
+/// object is stored as JSON in `data` (Zod OfferSchema is the source of truth);
+/// the scalar columns exist only for listing/sorting/filtering. Built-in
+/// SAMPLE_OFFERS (vzor-*) are NOT stored here — they live in code.
+model Offer {
+  id           String   @id // reuse the offer's own id (nanoid from generate.ts)
+  number       String   @default("")
+  type         String   @default("FVE") // OfferType: FVE | TC | KLIMA | COMBO
+  investorName String   @default("")
+  subject      String   @default("")
+  data         Json     @db.JsonB
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([createdAt])
+}

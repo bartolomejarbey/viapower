@@ -15,7 +15,7 @@ export default async function DashboardPage() {
     db.lead.count(),
     db.mediaAsset.count(),
   ]);
-  const offers = listOffers().length;
+  const offers = (await listOffers()).length;
   const recentLeads = await db.lead.findMany({ orderBy: { createdAt: "desc" }, take: 5 });
 
   const stats = [

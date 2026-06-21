@@ -5,7 +5,7 @@ import { OffersManager } from "./offers-manager";
 export const dynamic = "force-dynamic";
 
 export default async function OffersAdminPage() {
-  const offers = listOffers().map((o) => ({
+  const offers = (await listOffers()).map((o) => ({
     id: o.id,
     number: o.number,
     type: o.type,

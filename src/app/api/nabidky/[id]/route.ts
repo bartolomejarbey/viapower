@@ -12,6 +12,6 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   if (id.startsWith("vzor-")) {
     return NextResponse.json({ ok: false, error: "sample" }, { status: 400 });
   }
-  deleteOffer(id);
+  await deleteOffer(id);
   return NextResponse.json({ ok: true });
 }

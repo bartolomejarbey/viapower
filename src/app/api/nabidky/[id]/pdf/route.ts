@@ -9,7 +9,7 @@ export const maxDuration = 60;
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!(await getSession())) return new Response("Neautorizováno", { status: 401 });
   const { id } = await params;
-  const offer = getOffer(id);
+  const offer = await getOffer(id);
   if (!offer) return new Response("Nabídka nenalezena", { status: 404 });
 
   const origin = new URL(req.url).origin;

@@ -1,55 +1,89 @@
 import "server-only";
-import fs from "node:fs";
-import path from "node:path";
+import { db } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import { OfferSchema, type Offer } from "./schema";
 import { SAMPLE_OFFERS } from "./samples";
 
-const DIR = path.join(process.cwd(), "data", "offers");
-
-function ensureDir() {
-  if (!fs.existsSync(DIR)) fs.mkdirSync(DIR, { recursive: true });
+/** vzor-* ids are built-in code samples and are never written to the DB. */
+function isSampleId(id: string): boolean {
+  return id.startsWith("vzor-");
 }
 
-export function listOffers(): Offer[] {
-  ensureDir();
-  const fromFiles: Offer[] = fs
-    .readdirSync(DIR)
-    .filter((f) => f.endsWith(".json"))
-    .map((f) => {
-      try {
-        return OfferSchema.parse(JSON.parse(fs.readFileSync(path.join(DIR, f), "utf8")));
-      } catch {
-        return null;
-      }
-    })
+/**
+ * The offer's own `createdAt` is a free-form string (ISO or "15. 3. 2026").
+ * Derive a sortable DateTime for the scalar column, falling back to now().
+ */
+function toDate(value: string | undefined): Date {
+  if (value) {
+    const d = new Date(value);
+    if (!Number.isNaN(d.getTime())) return d;
+  }
+  return new Date();
+}
+
+/** Validate+normalize a DB row's JSON payload back into an Offer. */
+function fromRow(data: Prisma.JsonValue): Offer | null {
+  try {
+    return OfferSchema.parse(data);
+  } catch {
+    return null;
+  }
+}
+
+export async function listOffers(): Promise<Offer[]> {
+  const rows = await db.offer.findMany({ orderBy: { createdAt: "desc" } });
+
+  const fromDb = rows
+    .map((r) => fromRow(r.data))
     .filter((o): o is Offer => o !== null);
 
-  const fileIds = new Set(fromFiles.map((o) => o.id));
-  const samples = SAMPLE_OFFERS.filter((s) => !fileIds.has(s.id));
-  return [...fromFiles, ...samples].sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
+  const dbIds = new Set(fromDb.map((o) => o.id));
+  const samples = SAMPLE_OFFERS.filter((s) => !dbIds.has(s.id));
+
+  return [...fromDb, ...samples].sort((a, b) =>
+    (b.createdAt || "").localeCompare(a.createdAt || ""),
+  );
 }
 
-export function getOffer(id: string): Offer | null {
-  ensureDir();
-  const file = path.join(DIR, `${id}.json`);
-  if (fs.existsSync(file)) {
-    try {
-      return OfferSchema.parse(JSON.parse(fs.readFileSync(file, "utf8")));
-    } catch {
-      return null;
-    }
+export async function getOffer(id: string): Promise<Offer | null> {
+  const row = await db.offer.findUnique({ where: { id } });
+  if (row) {
+    const parsed = fromRow(row.data);
+    if (parsed) return parsed;
   }
   return SAMPLE_OFFERS.find((s) => s.id === id) ?? null;
 }
 
-export function saveOffer(offer: Offer): Offer {
-  ensureDir();
+export async function saveOffer(offer: Offer): Promise<Offer> {
   const parsed = OfferSchema.parse(offer);
-  fs.writeFileSync(path.join(DIR, `${parsed.id}.json`), JSON.stringify(parsed, null, 2), "utf8");
+
+  const scalars = {
+    number: parsed.number ?? "",
+    type: parsed.type,
+    investorName: parsed.investor?.name ?? "",
+    subject: parsed.subject ?? "",
+    createdAt: toDate(parsed.createdAt),
+    data: parsed as unknown as Prisma.InputJsonValue,
+  };
+
+  await db.offer.upsert({
+    where: { id: parsed.id },
+    create: { id: parsed.id, ...scalars },
+    // Don't overwrite createdAt on update — keep the original creation time.
+    update: {
+      number: scalars.number,
+      type: scalars.type,
+      investorName: scalars.investorName,
+      subject: scalars.subject,
+      data: scalars.data,
+    },
+  });
+
   return parsed;
 }
 
-export function deleteOffer(id: string): void {
-  const file = path.join(DIR, `${id}.json`);
-  if (fs.existsSync(file)) fs.unlinkSync(file);
+export async function deleteOffer(id: string): Promise<void> {
+  // Refuse to "delete" built-in samples — they only exist in code.
+  if (isSampleId(id)) return;
+  await db.offer.deleteMany({ where: { id } });
 }

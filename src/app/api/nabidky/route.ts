@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   if (!(await getSession())) return NextResponse.json({ ok: false }, { status: 401 });
-  const offers = listOffers().map((o) => ({
+  const offers = (await listOffers()).map((o) => ({
     id: o.id,
     number: o.number,
     type: o.type,
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const offer = OfferSchema.parse(body);
-    saveOffer(offer);
+    await saveOffer(offer);
     return NextResponse.json({ ok: true, offer });
   } catch (err) {
     return NextResponse.json({ ok: false, error: String(err) }, { status: 422 });

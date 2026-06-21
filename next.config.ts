@@ -5,8 +5,8 @@ const nextConfig: NextConfig = {
   turbopack: { root: __dirname },
   // Original WordPress URLs all end with "/"; preserve them exactly for SEO.
   trailingSlash: true,
-  // Playwright is a native server dep — keep it out of the bundle.
-  serverExternalPackages: ["playwright", "playwright-core"],
+  // Headless-Chromium deps are native/binary server packages — never bundle them.
+  serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "www.viapower.cz" },

@@ -19,7 +19,7 @@ export async function POST(req: Request) {
 
   try {
     const offer = await generateOfferFromBrief(brief);
-    saveOffer(offer);
+    await saveOffer(offer);
     return NextResponse.json({ ok: true, offer });
   } catch (err) {
     return NextResponse.json({ ok: false, error: String(err) }, { status: 500 });

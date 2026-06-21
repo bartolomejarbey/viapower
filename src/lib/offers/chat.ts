@@ -80,7 +80,7 @@ export async function chatOffer(messages: ChatMsg[]): Promise<ChatResult> {
   if (env.ready && env.offer) {
     try {
       const offer = buildOfferFromDraft(env.offer);
-      saveOffer(offer);
+      await saveOffer(offer);
       return { reply, missing: [], ready: true, offerId: offer.id };
     } catch {
       return { reply: `${reply}\n\n⚠️ Nepodařilo se sestavit nabídku z dat — zkontrolujme prosím ještě ceny a parametry.`, missing, ready: false };
