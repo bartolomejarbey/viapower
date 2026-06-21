@@ -7,6 +7,13 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   // Headless-Chromium deps are native/binary server packages — never bundle them.
   serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
+  // @sparticuz/chromium loads its bundled Chromium from bin/ via a runtime path
+  // the file tracer can't follow, so it's missing from the lambda by default.
+  // Force the whole package into the PDF route's serverless function bundle.
+  // ('*' matches the single [id] segment; picomatch does not cross '/'.)
+  outputFileTracingIncludes: {
+    "/api/nabidky/*/pdf": ["./node_modules/@sparticuz/chromium/**"],
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "www.viapower.cz" },
