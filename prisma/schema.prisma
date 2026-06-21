@@ -1,0 +1,108 @@
+// Viapower CMS data model. Typed, relational — not opaque page-builder JSON.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  role         String   @default("admin")
+  createdAt    DateTime @default(now())
+}
+
+/// Site-wide editable strings (announcement, hero, contact, …). value is JSON.
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model Service {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  excerpt   String
+  body      String   @default("")
+  icon      String   @default("Sun")
+  href      String   @default("")
+  order     Int      @default(0)
+  published Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+}
+
+model PricePackage {
+  id        String   @id @default(cuid())
+  name      String
+  powerKwp  String
+  battery   String
+  panels    String
+  priceFrom Int?
+  featured  Boolean  @default(false)
+  specs     String   @default("[]") // JSON: [[label, value], …]
+  href      String   @default("/poptavkovy-formular/")
+  order     Int      @default(0)
+  published Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+}
+
+/// Custom CMS pages — render at /<slug>/ and (optionally) appear in the navbar.
+model Page {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  metaDescription String   @default("")
+  published       Boolean  @default(false)
+  showInNav       Boolean  @default(false)
+  navLabel        String?
+  order           Int      @default(0)
+  heroImage       String   @default("")
+  blocks          Block[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+/// A typed content block on a Page. data is JSON, shaped per `type`.
+model Block {
+  id     String @id @default(cuid())
+  pageId String
+  page   Page   @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  type   String // heading | paragraph | image | features | cta | quote | stats
+  data   String @default("{}")
+  order  Int    @default(0)
+}
+
+model MediaAsset {
+  id        String   @id @default(cuid())
+  url       String
+  filename  String
+  alt       String   @default("")
+  width     Int?
+  height    Int?
+  createdAt DateTime @default(now())
+}
+
+model Lead {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  email     String
+  message   String   @default("")
+  source    String   @default("web")
+  createdAt DateTime @default(now())
+}
+
+/// Lightweight version history (snapshots taken on save).
+model Revision {
+  id         String   @id @default(cuid())
+  entityType String
+  entityId   String
+  data       String
+  createdAt  DateTime @default(now())
+}

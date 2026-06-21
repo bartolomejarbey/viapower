@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Nested sibling project + any build artifacts anywhere (not Viapower source):
+    "innercircle/**",
+    "**/.next/**",
+    "**/dist/**",
+    "**/build/**",
   ]),
 ]);
 

@@ -1,0 +1,174 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   Viapower offer — premium A4 brochure print stylesheet.
+   AI-generated artwork (public/offer-assets/*) is the fixed template; all copy
+   and numbers are data-driven. mm units, brand black / crimson / white.
+   ─────────────────────────────────────────────────────────────────────────── */
+html:has(.offer-root),
+body:has(.offer-root) { background: #ffffff !important; margin: 0; }
+
+.offer-root {
+  --red: #c00f0a;
+  --red-bright: #e8201a;
+  --red-dark: #8f0a06;
+  --ink: #0b0c0f;
+  --ink-2: #16181d;
+  --muted: #6b7280;
+  --line: #e6e7eb;
+  --soft: #fbf2f2;
+  font-family: var(--font-space), system-ui, sans-serif;
+  color: var(--ink);
+  background: #fff;
+  line-height: 1.5;
+  font-feature-settings: "tnum" 1, "ss01" 1;
+}
+.offer-root * { -webkit-print-color-adjust: exact; print-color-adjust: exact; box-sizing: border-box; }
+
+.offer-page {
+  position: relative;
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  background: #fff;
+  overflow: hidden;
+  page-break-after: always;
+  break-after: page;
+}
+.offer-page:last-child { page-break-after: auto; break-after: auto; }
+.offer-pad { padding: 13mm 16mm 22mm; }
+
+/* page footer */
+.offer-foot {
+  position: absolute; left: 16mm; right: 16mm; bottom: 9mm;
+  display: flex; align-items: center; justify-content: space-between; gap: 6mm;
+  border-top: 1px solid var(--line); padding-top: 3mm;
+  font-size: 7pt; color: var(--muted);
+}
+.offer-foot b { color: var(--ink); font-weight: 600; }
+.offer-foot .pg { font-weight: 700; color: var(--red); }
+
+/* ── section header ───────────────────────────────────────── */
+.sec { display: flex; align-items: stretch; gap: 5mm; margin-bottom: 8mm; }
+.sec-band {
+  width: 5mm; border-radius: 1mm; flex-shrink: 0;
+  background-image: url("/offer-assets/band.png");
+  background-size: cover; background-position: center;
+}
+.sec-txt { display: flex; flex-direction: column; justify-content: center; }
+.sec-num { font-size: 8pt; font-weight: 700; letter-spacing: 0.22em; color: var(--red); }
+.sec-title { font-size: 24pt; font-weight: 700; letter-spacing: -0.02em; line-height: 1.04; margin-top: 1mm; }
+
+/* ── COVER ────────────────────────────────────────────────── */
+.cover { display: flex; flex-direction: column; background: var(--ink); color: #fff; }
+.cover-img {
+  position: absolute; inset: 0;
+  background-image: url("/offer-assets/cover.png");
+  background-size: cover; background-position: center;
+}
+.cover-grad {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(8,9,11,0.55) 0%, rgba(8,9,11,0.12) 30%, rgba(8,9,11,0.78) 70%, rgba(8,9,11,0.97) 100%);
+}
+.cover-head { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 14mm 16mm 0; }
+.cover-logo { height: 9mm; filter: brightness(0) invert(1); }
+.cover-eyebrow { font-size: 8pt; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.82); }
+.cover-body { position: relative; margin-top: auto; padding: 0 16mm 7mm; }
+.cover-kicker { display: inline-flex; align-items: center; gap: 2mm; font-size: 8.5pt; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #fff; margin-bottom: 4mm; }
+.cover-kicker .dot { width: 2.4mm; height: 2.4mm; background: var(--red); display: inline-block; }
+.cover-h1 { font-size: 58pt; font-weight: 700; line-height: 0.96; letter-spacing: -0.035em; margin: 0; }
+.cover-h1 .accent { color: var(--red-bright); }
+.cover-sub { margin: 6mm 0 0; max-width: 130mm; font-size: 13pt; font-weight: 500; color: rgba(255,255,255,0.9); }
+.cover-meta {
+  position: relative; margin: 0 16mm 14mm;
+  border: 1px solid rgba(255,255,255,0.18); background: rgba(8,9,11,0.42);
+  display: grid; grid-template-columns: 1fr 1fr;
+}
+.cover-cell { padding: 5mm 6mm; border-right: 1px solid rgba(255,255,255,0.14); border-bottom: 1px solid rgba(255,255,255,0.14); }
+.cover-cell:nth-child(2n) { border-right: 0; }
+.cover-cell .k { font-size: 7.5pt; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.6); }
+.cover-cell .v { font-size: 11.5pt; font-weight: 600; margin-top: 1.4mm; color: #fff; }
+
+/* ── lead / technology copy ───────────────────────────────── */
+.lead { font-size: 10.5pt; color: #1c1d22; max-width: 168mm; }
+.lead p { margin: 0 0 3.6mm; }
+.lead strong { font-weight: 700; color: var(--ink); }
+.bullets { margin: 7mm 0 0; columns: 2; column-gap: 8mm; font-size: 9.5pt; padding-left: 0; list-style: none; }
+.bullets li { position: relative; padding-left: 5.5mm; margin: 0 0 2.6mm; break-inside: avoid; }
+.bullets li::before { content: ""; position: absolute; left: 0; top: 1.4mm; width: 2.4mm; height: 2.4mm; background: var(--red); }
+
+/* ── system metric cards (infographic) ────────────────────── */
+.metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; margin-top: 10mm; }
+.metric { border: 1px solid var(--line); padding: 5mm; break-inside: avoid; display: flex; flex-direction: column; gap: 1.5mm; position: relative; overflow: hidden; }
+.metric::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 1.2mm; background: var(--red); }
+.metric .ic { color: var(--red); }
+.metric .val { font-size: 22pt; font-weight: 700; letter-spacing: -0.02em; line-height: 1; margin-top: 1mm; }
+.metric .val .u { font-size: 11pt; font-weight: 600; color: var(--muted); margin-left: 1.2mm; }
+.metric .lbl { font-size: 8pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+
+.highlight { margin-top: 9mm; background: var(--ink); color: #fff; padding: 6mm 7mm; display: flex; align-items: center; justify-content: space-between; gap: 6mm; break-inside: avoid; }
+.highlight .t { font-size: 10pt; color: rgba(255,255,255,0.78); max-width: 110mm; }
+.highlight .n { font-size: 20pt; font-weight: 700; white-space: nowrap; }
+.highlight .n .u { font-size: 11pt; color: var(--red-bright); margin-left: 1mm; }
+
+/* ── budget table ─────────────────────────────────────────── */
+.proj-meta { display: flex; gap: 4mm; margin-bottom: 6mm; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); padding: 2.4mm 4mm; font-size: 9pt; display: inline-flex; align-items: center; gap: 2mm; }
+.chip b { font-weight: 700; }
+.chip .ic { color: var(--red); }
+.btable { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+.btable thead td { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); border-bottom: 1.5px solid var(--red); padding-bottom: 2mm; }
+.btable .grp td { font-size: 8.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 5mm 0 2mm; }
+.btable .grp td span { border-left: 2.4mm solid var(--red); padding-left: 3mm; }
+.btable .item td { padding: 2.3mm 0; border-bottom: 1px solid var(--line); vertical-align: top; break-inside: avoid; }
+.btable .name { font-weight: 600; }
+.btable .detail { color: var(--muted); font-size: 8.5pt; margin-top: 0.5mm; }
+.btable .num { text-align: right; white-space: nowrap; }
+
+.included { margin-top: 6mm; break-inside: avoid; }
+.included .h { font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--red-dark); margin-bottom: 2.5mm; }
+.included .tags { display: flex; flex-wrap: wrap; gap: 2mm; }
+.included .tag { background: var(--soft); border: 1px solid #f3d6d6; padding: 1.6mm 3mm; font-size: 8.5pt; }
+
+.price { margin-top: 9mm; break-inside: avoid; border: 1px solid var(--line); }
+.price .row { display: flex; justify-content: space-between; align-items: baseline; padding: 3.4mm 6mm; font-size: 10.5pt; }
+.price .row.sub { border-bottom: 1px solid var(--line); color: #1c1d22; }
+.price .grand { background: var(--ink); color: #fff; padding: 6mm; display: flex; align-items: flex-end; justify-content: space-between; gap: 6mm; }
+.price .grand .gl { font-size: 9pt; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.7); }
+.price .grand .gv { font-size: 30pt; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
+
+.addons { margin-top: 9mm; break-inside: avoid; }
+.addon { display: flex; justify-content: space-between; padding: 3mm 0; border-bottom: 1px dashed var(--line); font-size: 10pt; }
+.addon b { font-weight: 600; }
+.addon .p { color: var(--red-dark); font-weight: 600; }
+
+/* ── process timeline ─────────────────────────────────────── */
+.timeline { list-style: none; padding: 0; margin: 0; position: relative; }
+.timeline::before { content: ""; position: absolute; left: 4mm; top: 3mm; bottom: 3mm; width: 0.6mm; background: linear-gradient(var(--red), var(--soft)); }
+.tl { position: relative; padding: 0 0 7mm 14mm; break-inside: avoid; }
+.tl:last-child { padding-bottom: 0; }
+.tl .n { position: absolute; left: 0; top: -1mm; width: 8mm; height: 8mm; border-radius: 50%; background: var(--red); color: #fff; font-weight: 700; font-size: 9pt; display: grid; place-items: center; box-shadow: 0 0 0 1.4mm var(--soft); }
+.tl .ttl { font-size: 11pt; font-weight: 600; }
+
+/* ── why-us grid ──────────────────────────────────────────── */
+.why { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 3mm 8mm; }
+.why li { position: relative; padding-left: 6.5mm; font-size: 9.5pt; break-inside: avoid; }
+.why li .ic { position: absolute; left: 0; top: 0.3mm; color: var(--red); }
+
+/* ── project manager card ─────────────────────────────────── */
+.pm { margin-top: 9mm; border: 1px solid var(--line); border-left: 3mm solid var(--red); padding: 6mm 7mm; display: flex; align-items: center; gap: 6mm; break-inside: avoid; }
+.pm .av { width: 16mm; height: 16mm; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; font-size: 15pt; font-weight: 700; flex-shrink: 0; }
+.pm .name { font-size: 13pt; font-weight: 700; }
+.pm .role { color: var(--muted); font-style: italic; font-size: 9.5pt; }
+.pm .c { font-size: 10pt; margin-top: 2mm; display: flex; gap: 6mm; flex-wrap: wrap; }
+.pm .c span { display: inline-flex; align-items: center; gap: 1.6mm; }
+.pm .c .ic { color: var(--red); }
+
+/* ── closing band ─────────────────────────────────────────── */
+.close-band { position: absolute; left: 0; right: 0; bottom: 0; height: 92mm; color: #fff; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding: 14mm 16mm; }
+.close-img { position: absolute; inset: 0; background-image: url("/offer-assets/closing.png"); background-size: cover; background-position: center; }
+.close-grad { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8,9,11,0.25), rgba(8,9,11,0.92)); }
+.close-band .inner { position: relative; }
+.close-band .big { font-size: 30pt; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+.close-band .big .accent { color: var(--red-bright); }
+.close-band .meta { margin-top: 5mm; display: flex; gap: 8mm; flex-wrap: wrap; font-size: 10pt; color: rgba(255,255,255,0.92); }
+.close-band .meta span { display: inline-flex; align-items: center; gap: 2mm; }
+.close-band .meta .ic { color: var(--red-bright); }

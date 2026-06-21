@@ -1,0 +1,53 @@
+import type { Metadata } from "next";
+import { Hero } from "@/components/home/hero";
+import { LogosMarquee } from "@/components/home/logos-marquee";
+import { Stats } from "@/components/home/stats";
+import { Why } from "@/components/home/why";
+import { Packages } from "@/components/home/packages";
+import { Services } from "@/components/home/services";
+import { Gallery } from "@/components/home/gallery";
+import { Grant } from "@/components/home/grant";
+import { Process } from "@/components/home/process";
+import { Faq } from "@/components/home/faq";
+import { Contact } from "@/components/home/contact";
+import { getPackagesPublic, getServicesPublic, getSettings } from "@/lib/cms";
+import { getCompany } from "@/lib/company";
+
+export const metadata: Metadata = {
+  title: "Viapower — Fotovoltaika nové generace. Dotace až 160 000 Kč.",
+  description:
+    "Nejsme jen montáž FVE — jsme komplexní partner v energetice. Fotovoltaika, baterie, tepelná čerpadla a elektromobilita pro rodinné domy i firmy. 15+ let zkušeností, garantovaná dotace.",
+  alternates: { canonical: "/" },
+};
+
+export default async function HomePage() {
+  const [packages, services, t, company] = await Promise.all([getPackagesPublic(), getServicesPublic(), getSettings(), getCompany()]);
+
+  return (
+    <>
+      <Hero t={t} company={company} />
+      <LogosMarquee t={t} />
+      <Stats t={t} company={company} />
+      <Why t={t} />
+      <Packages
+        t={t}
+        items={packages.map((p) => ({
+          name: p.name,
+          power: p.powerKwp,
+          featured: p.featured,
+          href: p.href,
+          specs: (JSON.parse(p.specs) as [string, string][]) ?? [],
+          battery: p.battery,
+          panels: p.panels,
+          priceFrom: p.priceFrom,
+        }))}
+      />
+      <Services t={t} items={services.map((s) => ({ title: s.title, excerpt: s.excerpt, icon: s.icon, href: s.href }))} />
+      <Gallery t={t} />
+      <Grant t={t} />
+      <Process t={t} />
+      <Faq t={t} />
+      <Contact t={t} company={company} />
+    </>
+  );
+}

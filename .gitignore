@@ -39,3 +39,19 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# dev / test artifacts
+/.playwright-mcp/
+/*.jpeg
+/*.png
+/test-results/
+prisma/dev.db
+prisma/dev.db-journal
+
+/public/uploads/
+
+*.pdf
+/scripts/make-test-page.ts
+
+# foreign sub-project (not part of this app)
+/innercircle/
