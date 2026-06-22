@@ -11,7 +11,7 @@ import { MiniBars } from "@/components/ui/mini-bars";
 import { FaqAccordion } from "@/components/ui/faq-accordion";
 import { LeadForm } from "@/components/site/lead-form";
 import type { Company } from "@/lib/company";
-import { bgClass, parseBlockData, type AnyBlock, type BlockBg } from "@/lib/blocks";
+import { bgClass, normalizeLogos, parseBlockData, type AnyBlock, type BlockBg } from "@/lib/blocks";
 import { cn } from "@/lib/utils";
 
 const ICONS: Record<string, LucideIcon> = {
@@ -149,7 +149,7 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
             <Reveal className={cn("overflow-hidden border border-line-strong", right && "lg:order-2")}>
               {image ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={image} alt="" className="aspect-[4/3] w-full object-cover" />
+                <img src={image} alt={s(d.title) || s(d.eyebrow) || ""} className="aspect-[4/3] w-full object-cover" />
               ) : (
                 <div className="aspect-[4/3] w-full bg-card" />
               )}
@@ -230,6 +230,11 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
       return (
         <section className={band(bg, "!py-14")}>
           <div className="mx-auto max-w-[1400px]">
+            {(s(d.title) || s(d.eyebrow) || s(d.sub)) ? (
+              <div className="mb-10">
+                <SectionHead eyebrow={s(d.eyebrow)} title={s(d.title)} accent={s(d.accent)} sub={s(d.sub)} />
+              </div>
+            ) : null}
             <Stagger className="grid grid-cols-2 border border-line-strong lg:grid-cols-4">
               {items.map((it, i) => (
                 <StaggerItem key={i} className="border-b border-line lg:border-b-0 lg:border-r lg:last:border-r-0">
@@ -251,7 +256,7 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
 
     /* ── PRICING / PACKAGES ───────────────────────────────── */
     case "pricing": {
-      const items = arr<{ name?: string; tagline?: string; specs?: [string, string][]; href?: string; featured?: boolean }>(d.items);
+      const items = arr<{ name?: string; tagline?: string; specs?: [string, string][]; href?: string; featured?: boolean; ctaLabel?: string; badge?: string }>(d.items);
       return (
         <section className={band(bg)}>
           <div className="mx-auto max-w-[1400px]">
@@ -264,7 +269,7 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
                       <span aria-hidden className="glow-ring" />
                       <span className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-red-bright">
                         <span className="h-2 w-2 bg-red" /> {s(p.name, "Balíček")}
-                        {p.featured ? <span className="ml-1 normal-case tracking-normal text-ink-dim">· {tt("pkg.badge", "doporučujeme")}</span> : null}
+                        {p.featured ? <span className="ml-1 normal-case tracking-normal text-ink-dim">· {s(p.badge) || tt("pkg.badge", "doporučujeme")}</span> : null}
                       </span>
                       {s(p.tagline) ? <p className="mt-3 text-[14px] leading-relaxed text-ink-muted">{s(p.tagline)}</p> : null}
                       <ul className="mt-5 flex-1 border-t border-line pt-4">
@@ -276,7 +281,7 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
                         ))}
                       </ul>
                       <Link href={s(p.href, "/poptavkovy-formular/")} className="mt-6 flex items-center justify-between border border-line-strong px-4 py-3 text-[12px] font-bold uppercase tracking-[0.1em] text-ink transition-colors hover:border-red hover:bg-red hover:text-white">
-                        {tt("pkg.cta", "Více informací")} <ArrowRight size={14} />
+                        {s(p.ctaLabel) || tt("pkg.cta", "Více informací")} <ArrowRight size={14} />
                       </Link>
                     </div>
                   </StaggerItem>
@@ -300,7 +305,11 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
                 <StaggerItem key={i}>
                   <div className="brackets brackets-draw group relative block h-64 overflow-hidden border border-line-strong">
                     <ParallaxY range={12} className="absolute -inset-y-8 inset-x-0">
-                      <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url('${s(it.image)}')` }} />
+                      {s(it.image) ? (
+                        <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" style={{ backgroundImage: `url('${s(it.image)}')` }} />
+                      ) : (
+                        <div className="absolute inset-0 bg-card" />
+                      )}
                     </ParallaxY>
                     <div className="absolute inset-0 bg-gradient-to-t from-base via-base/10 to-transparent" />
                     <div className="absolute bottom-4 left-4 right-4">
@@ -318,7 +327,7 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
 
     /* ── TESTIMONIALS ─────────────────────────────────────── */
     case "testimonials": {
-      const items = arr<{ text?: string; author?: string }>(d.items);
+      const items = arr<{ text?: string; author?: string; role?: string; image?: string }>(d.items);
       return (
         <section className={band(bg)}>
           <div className="mx-auto max-w-[1400px]">
@@ -329,7 +338,18 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
                   <figure className="brackets brackets-draw group flex h-full flex-col border border-line-strong bg-card p-7 transition-colors hover:border-red">
                     <QuoteIcon size={26} className="mb-3 text-red" />
                     <blockquote className="flex-1 text-[16px] italic leading-relaxed text-ink">{s(it.text)}</blockquote>
-                    {s(it.author) ? <figcaption className="mt-4 text-[13px] font-semibold text-red-bright">{s(it.author)}</figcaption> : null}
+                    {(s(it.author) || s(it.image)) ? (
+                      <figcaption className="mt-4 flex items-center gap-3">
+                        {s(it.image) ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={s(it.image)} alt={s(it.author)} className="h-10 w-10 shrink-0 rounded-full object-cover" />
+                        ) : null}
+                        <span>
+                          <span className="block text-[13px] font-semibold text-red-bright">{s(it.author)}</span>
+                          {s(it.role) ? <span className="block text-[12px] text-ink-muted">{s(it.role)}</span> : null}
+                        </span>
+                      </figcaption>
+                    ) : null}
                   </figure>
                 </StaggerItem>
               ))}
@@ -356,8 +376,9 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
 
     /* ── LOGOS ────────────────────────────────────────────── */
     case "logos": {
-      const items = arr<string>(d.items);
-      const row = [...items, ...items];
+      const all = normalizeLogos(d.items).filter((it) => it.image || it.name.trim());
+      // duplicate only when there are enough items for a seamless marquee
+      const row = all.length >= 4 ? [...all, ...all] : all;
       return (
         <section className={cn("overflow-hidden", bgClass(bg), "py-10")}>
           <div className="mx-auto mb-5 max-w-[1400px] px-5 md:px-9">
@@ -367,7 +388,12 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
             {[0, 1].map((r) => (
               <div key={r} aria-hidden={r === 1} className="animate-marquee flex shrink-0 items-center gap-14 pr-14 group-hover:[animation-play-state:paused]">
                 {row.map((c, i) => (
-                  <span key={i} className="whitespace-nowrap text-[15px] font-medium text-ink-muted">{c}</span>
+                  c.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img key={i} src={c.image} alt={c.name} className="h-9 w-auto shrink-0 object-contain opacity-70 grayscale transition hover:opacity-100 hover:grayscale-0" />
+                  ) : (
+                    <span key={i} className="whitespace-nowrap text-[15px] font-medium text-ink-muted">{c.name}</span>
+                  )
                 ))}
               </div>
             ))}

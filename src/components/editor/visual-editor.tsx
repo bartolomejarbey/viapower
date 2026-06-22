@@ -401,6 +401,10 @@ function BlockInspector({ block, onChange, onPickImage, onClose }: { block: Edit
 
       {"bg" in d && <BgToggle value={sv(d.bg)} onChange={(v) => set("bg", v)} />}
 
+      {["features", "steps", "stats", "testimonials", "faq", "gallery", "logos"].includes(block.type) && (
+        <p className="mt-4 text-[12.5px] leading-relaxed text-ink-dim">Jednotlivé položky upravíte přímo na stránce — klikněte do textu, u obrázků klikněte na pole. Tlačítkem „Přidat“ přidáte další, šipkami změníte pořadí.</p>
+      )}
+
       {!("accent" in d) && !("bg" in d) && block.type !== "hero" && block.type !== "spacer" && (
         <p className="text-[12.5px] leading-relaxed text-ink-dim">Tento blok upravíte přímo na stránce — klikněte do textu a pište.</p>
       )}
@@ -419,35 +423,21 @@ function BtnFields({ label, obj, onChange }: { label: string; obj: Data; onChang
   );
 }
 
-const specsToText = (specs: unknown) => (Array.isArray(specs) ? (specs as [string, string][]).map(([k, v]) => `${k}: ${v}`).join("\n") : "");
-const textToSpecs = (t: string): [string, string][] =>
-  t.split("\n").map((l) => l.trim()).filter(Boolean).map((l) => { const i = l.indexOf(":"); return i >= 0 ? ([l.slice(0, i).trim(), l.slice(i + 1).trim()] as [string, string]) : ([l, ""] as [string, string]); });
-
-/** Controlled specs editor — local text is source of truth, parent stays in sync every keystroke. */
-function SpecsEditor({ specs, onChange }: { specs: unknown; onChange: (v: [string, string][]) => void }) {
-  const [text, setText] = useState(() => specsToText(specs));
-  return (
-    <textarea
-      aria-label="Parametry balíčku (řádek = Popisek: Hodnota)"
-      value={text}
-      onChange={(e) => { setText(e.target.value); onChange(textToSpecs(e.target.value)); }}
-      rows={4}
-      className={inputCls}
-    />
-  );
-}
-
 function PricingItems({ items, onChange }: { items: Data[]; onChange: (v: Data[]) => void }) {
   const sv = (v: unknown) => (typeof v === "string" ? v : "");
   const set = (i: number, patch: Data) => onChange(items.map((it, j) => (j === i ? { ...it, ...patch } : it)));
   return (
     <div>
+      <p className="mb-3 text-[12px] leading-relaxed text-ink-dim">Název, popis a parametry balíčků upravíte přímo na stránce. Zde nastavíte odkaz, štítek a zvýraznění.</p>
       {items.map((p, i) => (
         <div key={i} className="mb-3 border border-line-strong bg-card p-3">
-          <label className={labelCls}>Parametry (řádek = „Popisek: Hodnota“)</label>
-          <SpecsEditor specs={p.specs} onChange={(v) => set(i, { specs: v })} />
-          <label className={labelCls}>Odkaz „Více informací“</label>
-          <input aria-label="Odkaz Více informací" value={sv(p.href)} onChange={(e) => set(i, { href: e.target.value })} className={inputCls} placeholder="/poptavkovy-formular/" />
+          <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-red-bright">{sv(p.name) || `Balíček ${i + 1}`}</span>
+          <label className={labelCls}>Odkaz tlačítka</label>
+          <input aria-label="Odkaz tlačítka balíčku" value={sv(p.href)} onChange={(e) => set(i, { href: e.target.value })} className={inputCls} placeholder="/poptavkovy-formular/" />
+          <label className={labelCls}>Text tlačítka (volitelné)</label>
+          <input aria-label="Text tlačítka balíčku" value={sv(p.ctaLabel)} onChange={(e) => set(i, { ctaLabel: e.target.value })} className={inputCls} placeholder="Více informací" />
+          <label className={labelCls}>Štítek (volitelné)</label>
+          <input aria-label="Štítek balíčku" value={sv(p.badge)} onChange={(e) => set(i, { badge: e.target.value })} className={inputCls} placeholder="doporučujeme" />
           <label className="mt-2 flex items-center gap-2 text-[12.5px] text-ink-muted"><input type="checkbox" checked={!!p.featured} onChange={(e) => set(i, { featured: e.target.checked })} className="accent-red" /> Zvýraznit</label>
         </div>
       ))}

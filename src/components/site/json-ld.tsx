@@ -27,7 +27,7 @@ export async function JsonLd() {
         "@type": "LocalBusiness",
         "@id": `${company.url}/#localbusiness`,
         name: company.name,
-        image: `${company.url}/img/real/install-1.jpg`,
+        image: company.image.startsWith("http") ? company.image : `${company.url}${company.image}`,
         url: company.url,
         telephone: company.phone,
         priceRange: "$$",

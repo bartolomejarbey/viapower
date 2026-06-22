@@ -6,7 +6,7 @@ import { T, tx } from "@/components/site/t";
 
 const ICONS: Record<string, LucideIcon> = { Home, Building2, Thermometer, Plug, Wind, Cpu, Sun };
 
-export type ServiceItem = { title: string; excerpt: string; icon: string; href: string };
+export type ServiceItem = { title: string; excerpt: string; icon: string; image?: string; href: string };
 
 // hairline dividers: right edge except row-last, bottom edge except last row
 const CELL =
@@ -33,12 +33,19 @@ export function Services({ items, t }: { items: ServiceItem[]; t?: Record<string
             const Icon = ICONS[s.icon] ?? Sun;
             // Only render a real link when the href is a valid internal path —
             // a malformed/empty href must never become a dead card or "#" no-op.
-            const valid = typeof s.href === "string" && s.href.startsWith("/");
+            const isInternal = typeof s.href === "string" && s.href.startsWith("/");
+            const isExternal = typeof s.href === "string" && (/^https?:\/\//i.test(s.href) || s.href.startsWith("mailto:") || s.href.startsWith("tel:"));
+            const valid = isInternal || isExternal;
             const inner = (
               <>
                 <div className="mb-5 flex items-center justify-between">
-                  <span className="grid h-12 w-12 place-items-center border border-red bg-red-soft text-red">
-                    <Icon size={22} />
+                  <span className="grid h-12 w-12 place-items-center overflow-hidden border border-red bg-red-soft text-red">
+                    {s.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={s.image} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <Icon size={22} />
+                    )}
                   </span>
                   {valid && (
                     <ArrowUpRight
@@ -56,8 +63,10 @@ export function Services({ items, t }: { items: ServiceItem[]; t?: Record<string
             );
             return (
               <StaggerItem key={s.href + i} className={CELL}>
-                {valid ? (
+                {isInternal ? (
                   <Link href={s.href} className="group flex h-full flex-col p-9 transition-colors hover:bg-red-soft">{inner}</Link>
+                ) : isExternal ? (
+                  <a href={s.href} target="_blank" rel="noopener noreferrer" className="group flex h-full flex-col p-9 transition-colors hover:bg-red-soft">{inner}</a>
                 ) : (
                   <div className="flex h-full flex-col p-9">{inner}</div>
                 )}

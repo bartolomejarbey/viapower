@@ -10,7 +10,7 @@ export default async function ServicesAdminPage() {
     <div className="p-8">
       <AdminHeader title="Služby" desc="Spravujte služby zobrazené na webu. Přetažením změníte pořadí." />
       <ServicesManager
-        initial={services.map((s) => ({ id: s.id, title: s.title, excerpt: s.excerpt, icon: s.icon, href: s.href, published: s.published }))}
+        initial={services.map((s) => ({ id: s.id, title: s.title, excerpt: s.excerpt, icon: s.icon, image: s.image, href: s.href, published: s.published }))}
       />
     </div>
   );

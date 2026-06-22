@@ -177,7 +177,8 @@ export function AdminEditBar() {
             // optimistic preview: swap the visible image in place
             const el = imgTarget.el;
             const img = el.querySelector("img");
-            if (img) img.src = url;
+            // next/image emits srcset+sizes; clear them or setting .src alone won't repaint.
+            if (img) { img.removeAttribute("srcset"); img.removeAttribute("sizes"); img.src = url; }
             const bg = el.querySelector<HTMLElement>('[style*="background-image"]') ?? el;
             if (bg.style.backgroundImage) bg.style.backgroundImage = `url('${url}')`;
             setImgTarget(null);

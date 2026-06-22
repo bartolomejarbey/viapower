@@ -21,9 +21,20 @@ export type FeatureItem = { icon: IconName; title: string; text: string };
 export type StepItem = { title: string; text: string };
 export type StatItem = { value: string; label: string; desc: string };
 export type GalleryItem = { image: string; label: string; title: string };
-export type TestimonialItem = { text: string; author: string };
+export type TestimonialItem = { text: string; author: string; role?: string; image?: string };
 export type FaqItemData = { q: string; a: string };
-export type PackageItemData = { name: string; tagline: string; specs: [string, string][]; href: string; featured: boolean };
+export type LogoItem = { image: string; name: string };
+export type PackageItemData = { name: string; tagline: string; specs: [string, string][]; href: string; featured: boolean; ctaLabel?: string; badge?: string };
+
+/** Logos used to be a list of plain name strings; normalize legacy data to {image,name}. */
+export function normalizeLogos(items: unknown): LogoItem[] {
+  if (!Array.isArray(items)) return [];
+  return items.map((it) =>
+    typeof it === "string"
+      ? { image: "", name: it }
+      : { image: String((it as LogoItem)?.image ?? ""), name: String((it as LogoItem)?.name ?? "") },
+  );
+}
 
 export type BlockDataMap = {
   hero: { eyebrow: string; title: string; accent: string; sub: string; image: string; primary: Btn; secondary: Btn };
@@ -31,14 +42,14 @@ export type BlockDataMap = {
   richtext: { html: string; bg: BlockBg };
   features: { eyebrow: string; title: string; accent: string; sub: string; columns: number; items: FeatureItem[]; bg: BlockBg };
   steps: { eyebrow: string; title: string; accent: string; sub: string; items: StepItem[]; bg: BlockBg };
-  stats: { items: StatItem[]; bg: BlockBg };
+  stats: { eyebrow: string; title: string; accent: string; sub: string; items: StatItem[]; bg: BlockBg };
   imagetext: { eyebrow: string; title: string; accent: string; html: string; image: string; side: "left" | "right"; button: Btn; bg: BlockBg };
   gallery: { eyebrow: string; title: string; accent: string; items: GalleryItem[]; bg: BlockBg };
   testimonials: { eyebrow: string; title: string; accent: string; items: TestimonialItem[]; bg: BlockBg };
   faq: { eyebrow: string; title: string; accent: string; items: FaqItemData[]; bg: BlockBg };
   pricing: { eyebrow: string; title: string; accent: string; sub: string; items: PackageItemData[]; bg: BlockBg };
   cta: { title: string; text: string; buttonLabel: string; buttonHref: string; bg: BlockBg };
-  logos: { label: string; items: string[]; bg: BlockBg };
+  logos: { label: string; items: LogoItem[]; bg: BlockBg };
   leadform: { eyebrow: string; title: string; accent: string; sub: string; bg: BlockBg };
   spacer: { size: "s" | "m" | "l" };
 };
@@ -92,7 +103,7 @@ export const BLOCK_DEFS: BlockDef[] = [
   },
   {
     type: "stats", label: "Statistiky", group: "Sociální důkaz", icon: "BarChart3",
-    make: () => ({ bg: "surface", items: [
+    make: () => ({ eyebrow: "", title: "", accent: "", sub: "", bg: "surface", items: [
       { value: "500+", label: "realizace", desc: "Nainstalovaných systémů" },
       { value: "15", label: "zkušenosti", desc: "Let v oboru" },
       { value: "4,9/5", label: "hodnocení", desc: "Průměrné hodnocení" },
@@ -127,7 +138,9 @@ export const BLOCK_DEFS: BlockDef[] = [
   },
   {
     type: "logos", label: "Loga / důvěra", group: "Sociální důkaz", icon: "Building2",
-    make: () => ({ label: "Důvěřují nám", bg: "surface", items: ["Partner 1", "Partner 2", "Partner 3", "Partner 4"] }),
+    make: () => ({ label: "Důvěřují nám", bg: "surface", items: [
+      { image: "", name: "Partner 1" }, { image: "", name: "Partner 2" }, { image: "", name: "Partner 3" }, { image: "", name: "Partner 4" },
+    ] }),
   },
   {
     type: "cta", label: "Výzva k akci", group: "Akce", icon: "Megaphone",

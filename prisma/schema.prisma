@@ -32,6 +32,7 @@ model Service {
   excerpt   String
   body      String   @default("")
   icon      String   @default("Sun")
+  image     String   @default("")
   href      String   @default("")
   order     Int      @default(0)
   published Boolean  @default(true)

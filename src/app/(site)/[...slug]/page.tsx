@@ -110,7 +110,8 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug:
           title={<Editable k="ref.title">{setting(t, "ref.title", "Stovky realizací po celé ČR.")}</Editable>}
           sub={<Editable k="ref.sub">{setting(t, "ref.sub", "Rodinné domy, firmy, obce i veřejné instituce. Každý projekt na klíč — včetně dotace, revize a servisního dohledu.")}</Editable>}
           crumbs={crumbs}
-          image="/img/real/install-7.jpg"
+          image={setting(t, "ref.image", "/img/real/install-7.jpg")}
+          imageKey="ref.image"
         />
         <section className="mx-auto max-w-[1400px] px-5 py-20 md:px-9">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -152,7 +153,8 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug:
           title={<Editable k="car.title">{setting(t, "car.title", "Pojďte stavět energetiku budoucnosti.")}</Editable>}
           sub={<Editable k="car.sub">{setting(t, "car.sub", "Rosteme a hledáme parťáky do týmu. Rodinná firma, férové jednání, práce, která dává smysl.")}</Editable>}
           crumbs={crumbs}
-          image="/img/real/team.jpg"
+          image={setting(t, "car.image", "/img/real/team.jpg")}
+          imageKey="car.image"
         />
         <section className="mx-auto max-w-[1000px] px-5 py-20 md:px-9">
           <div className="flex flex-col gap-4">
@@ -248,8 +250,9 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug:
     cat === "reference-detail"
       ? GALLERY[getReferenceDetailPages().findIndex((r) => pathFromUrl(r.url) === path) % GALLERY.length]
       : cat === "service"
-        ? "/img/real/install-5.jpg"
+        ? setting(t, "svc.image", "/img/real/install-5.jpg")
         : undefined;
+  const heroImageKey = cat === "service" ? "svc.image" : undefined;
 
   // ── default: service / generic / legal / news / detail ───────
   const isCalculator = path === "/kalkulacka/";
@@ -267,6 +270,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug:
         sub={page.metaDescription || undefined}
         crumbs={crumbs}
         image={heroImage}
+        imageKey={heroImageKey}
       />
       <section className="relative overflow-hidden px-5 py-16 md:px-9 md:py-20">
         <div aria-hidden className="aurora absolute -left-40 top-1/4 -z-10 h-[480px] w-[480px] opacity-50" />

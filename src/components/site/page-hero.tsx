@@ -12,18 +12,21 @@ export function PageHero({
   sub,
   crumbs,
   image,
+  imageKey,
 }: {
   eyebrow: ReactNode;
   title: ReactNode;
   sub?: ReactNode;
   crumbs?: Crumb[];
   image?: string;
+  /** When set, the background becomes swappable via "Živá editace" (saves to this Settings key). */
+  imageKey?: string;
 }) {
   return (
     <section className="relative overflow-hidden border-b border-line px-5 pb-20 pt-16 md:px-9 md:pb-28 md:pt-20">
-      {image && (
+      {(image || imageKey) && (
         <>
-          <div className="absolute inset-0 -z-20 scale-105 bg-cover bg-center opacity-25" style={{ backgroundImage: `url('${image}')` }} />
+          <div data-edit-img={imageKey} className="absolute inset-0 -z-20 scale-105 bg-cover bg-center opacity-25" style={image ? { backgroundImage: `url('${image}')` } : undefined} />
           <div className="absolute inset-0 -z-10 bg-gradient-to-t from-base via-base/70 to-base/60" />
           <div className="absolute inset-0 -z-10 bg-gradient-to-r from-base via-base/40 to-transparent" />
         </>

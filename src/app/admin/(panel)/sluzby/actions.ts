@@ -18,7 +18,7 @@ function normalizeHref(href: string): string {
   return "/" + h.replace(/^\/+/, "").replace(/\/+$/, "") + "/";
 }
 
-export async function createService(data: { title: string; excerpt: string; icon: string; href: string }) {
+export async function createService(data: { title: string; excerpt: string; icon: string; image?: string; href: string }) {
   await assertSession();
   const count = await db.service.count();
   await db.service.create({
@@ -27,6 +27,7 @@ export async function createService(data: { title: string; excerpt: string; icon
       title: data.title,
       excerpt: data.excerpt,
       icon: data.icon || "Sun",
+      image: data.image ?? "",
       href: normalizeHref(data.href),
       order: count,
     },
@@ -36,10 +37,10 @@ export async function createService(data: { title: string; excerpt: string; icon
 
 export async function updateService(
   id: string,
-  data: { title: string; excerpt: string; icon: string; href: string; published: boolean },
+  data: { title: string; excerpt: string; icon: string; image?: string; href: string; published: boolean },
 ) {
   await assertSession();
-  await db.service.update({ where: { id }, data: { ...data, href: normalizeHref(data.href) } });
+  await db.service.update({ where: { id }, data: { ...data, image: data.image ?? "", href: normalizeHref(data.href) } });
   revalidate();
 }
 

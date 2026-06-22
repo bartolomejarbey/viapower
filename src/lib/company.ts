@@ -1,5 +1,5 @@
 import "server-only";
-import { company as defaults } from "@/config/site";
+import { company as defaults, logoPath } from "@/config/site";
 import { getSettings } from "@/lib/cms";
 
 /** Effective company facts — DB settings (editable in CMS → Nastavení) over the static seed. */
@@ -10,6 +10,9 @@ export type Company = {
   tagline: string;
   ico: string;
   founded: number;
+  logo: string;
+  logoLight: string;
+  image: string;
   address: { street: string; city: string; zip: string; country: string };
   phone: string;
   phoneHref: string;
@@ -33,9 +36,13 @@ export function companyFields(c: Company): Record<string, string> {
   return {
     "company.name": c.name,
     "company.legalName": c.legalName,
+    "company.url": c.url,
     "company.tagline": c.tagline,
     "company.founded": String(c.founded),
     "company.ico": c.ico,
+    "brand.logo": c.logo,
+    "brand.logoLight": c.logoLight === c.logo ? "" : c.logoLight,
+    "company.image": c.image,
     "company.phone": c.phone,
     "company.email": c.email,
     "company.facebook": c.facebook,
@@ -60,14 +67,23 @@ export async function getCompany(): Promise<Company> {
     const v = s[`company.${key}`];
     return v != null && String(v).trim() !== "" ? String(v) : fb;
   };
+  // raw settings getter (non company.* keys: brand.*, etc.)
+  const raw = (key: string, fb: string) => {
+    const v = s[key];
+    return v != null && String(v).trim() !== "" ? String(v) : fb;
+  };
   const phone = g("phone", defaults.phone);
   const pmPhone = g("pm.phone", defaults.projectManager.phone);
+  const logo = raw("brand.logo", logoPath);
   return {
     name: g("name", defaults.name),
     legalName: g("legalName", defaults.legalName),
-    url: defaults.url,
+    url: g("url", defaults.url),
     tagline: g("tagline", defaults.tagline),
     ico: g("ico", defaults.ico),
+    logo,
+    logoLight: raw("brand.logoLight", logo),
+    image: raw("company.image", "/img/real/firmy.jpg"),
     founded: parseInt(g("founded", String(defaults.founded)), 10) || defaults.founded,
     address: {
       street: g("address.street", defaults.address.street),

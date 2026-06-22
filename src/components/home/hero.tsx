@@ -40,7 +40,7 @@ export function Hero({ t, company }: { t?: Record<string, string>; company: Comp
   return (
     <section ref={sectionRef} className="relative flex min-h-[calc(100vh-120px)] items-center overflow-hidden px-5 py-16 md:px-9">
       {/* fullscreen background photo — pre-extended upward so the drift never reveals an edge */}
-      <motion.div className="absolute inset-x-0 -top-[10%] bottom-0 -z-30" style={reduce ? undefined : { y: bgY }}>
+      <motion.div className="absolute inset-x-0 -top-[10%] bottom-0 -z-30" style={reduce ? undefined : { y: bgY }} data-edit-img="hero.image">
         <Image src={bgImage} alt="" fill priority sizes="100vw" className="object-cover object-center" />
       </motion.div>
       <div className="absolute inset-0 -z-20 bg-base/55" />

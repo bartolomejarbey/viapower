@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "www.viapower.cz" },
       { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "lhpwcnsgdcjnqopioqgc.supabase.co" },
     ],
   },
   // 301 map for consolidated legacy URLs is appended here during migration.

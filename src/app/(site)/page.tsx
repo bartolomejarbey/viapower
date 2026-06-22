@@ -42,7 +42,7 @@ export default async function HomePage() {
           priceFrom: p.priceFrom,
         }))}
       />
-      <Services t={t} items={services.map((s) => ({ title: s.title, excerpt: s.excerpt, icon: s.icon, href: s.href }))} />
+      <Services t={t} items={services.map((s) => ({ title: s.title, excerpt: s.excerpt, icon: s.icon, image: s.image, href: s.href }))} />
       <Gallery t={t} />
       <Grant t={t} />
       <Process t={t} />

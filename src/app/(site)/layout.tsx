@@ -36,7 +36,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         ctaText={setting(settings, "announcement.ctaText", "Spočítat moji nabídku →")}
         ctaHref={setting(settings, "announcement.ctaHref", "/poptavkovy-formular/")}
       />
-      <SiteNav extraNav={extraNav} phone={company.phone} phoneHref={company.phoneHref} cta={setting(settings, "nav.cta", "Konzultace")} ctaHref={setting(settings, "nav.ctaHref", "/poptavkovy-formular/")} />
+      <SiteNav extraNav={extraNav} phone={company.phone} phoneHref={company.phoneHref} cta={setting(settings, "nav.cta", "Konzultace")} ctaHref={setting(settings, "nav.ctaHref", "/poptavkovy-formular/")} logo={company.logo} logoLight={company.logoLight} />
       <main>{children}</main>
       <SiteFooter />
       <CursorLight />

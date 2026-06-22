@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Lock } from "lucide-react";
-import { footerNav, logoPath } from "@/config/site";
+import { footerNav } from "@/config/site";
 import { FooterWordmark } from "@/components/site/footer-wordmark";
 import { getSettings } from "@/lib/cms";
 import { getCompany } from "@/lib/company";
@@ -12,7 +12,7 @@ export async function SiteFooter() {
     <footer className="border-t border-line bg-base px-5 pb-8 pt-20 md:px-9">
       <div className="mx-auto grid max-w-[1400px] gap-12 md:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
         <div>
-          <img src={logoPath} alt="Viapower" className="h-7 w-auto [filter:brightness(0)_invert(1)]" />
+          <img src={company.logoLight} alt={company.name} className={`h-7 w-auto${company.logoLight === company.logo ? " [filter:brightness(0)_invert(1)]" : ""}`} data-edit-img="brand.logo" />
           <p className="mt-5 max-w-sm text-[14px] leading-relaxed text-white/55" data-edit="ft.tag" suppressContentEditableWarning>
             {t["ft.tag"] || company.tagline ||
               "Komplexní partner v energetice — fotovoltaika, baterie, tepelná čerpadla a elektromobilita. 15+ let zkušeností, stovky realizací po celé ČR."}

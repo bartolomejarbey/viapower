@@ -1,6 +1,11 @@
 import type { MetadataRoute } from "next";
+import { getSettings } from "@/lib/cms";
 
-export default function manifest(): MetadataRoute.Manifest {
+export default async function manifest(): Promise<MetadataRoute.Manifest> {
+  const t = await getSettings();
+  const raw = t["app.icon"];
+  const icon = raw != null && String(raw).trim() !== "" ? String(raw) : "/favicon.ico";
+  const type = icon.endsWith(".png") ? "image/png" : icon.endsWith(".webp") ? "image/webp" : icon.endsWith(".svg") ? "image/svg+xml" : "image/x-icon";
   return {
     name: "Viapower — energetika na klíč",
     short_name: "Viapower",
@@ -11,7 +16,7 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#08090b",
     lang: "cs",
     icons: [
-      { src: "/favicon.ico", sizes: "any", type: "image/x-icon" },
+      { src: icon, sizes: "any", type },
     ],
   };
 }

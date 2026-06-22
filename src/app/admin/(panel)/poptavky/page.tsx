@@ -1,8 +1,8 @@
-import { Trash2, Mail, Phone } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import { db } from "@/lib/db";
 import { AdminHeader } from "@/components/admin/ui";
 import { formatDateCZ } from "@/lib/utils";
-import { deleteLead } from "./actions";
+import { DeleteLeadButton } from "./lead-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -32,11 +32,7 @@ export default async function LeadsAdminPage() {
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-2">
                   <span className="font-mono text-[11px] text-ink-dim">{formatDateCZ(l.createdAt)}</span>
-                  <form action={deleteLead.bind(null, l.id)}>
-                    <button type="submit" className="inline-flex items-center gap-1.5 border border-red/40 px-2.5 py-1.5 font-mono text-[11px] uppercase tracking-wide text-red-bright transition-colors hover:bg-red hover:text-white">
-                      <Trash2 size={12} /> Smazat
-                    </button>
-                  </form>
+                  <DeleteLeadButton id={l.id} />
                 </div>
               </div>
             </div>

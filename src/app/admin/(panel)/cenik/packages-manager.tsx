@@ -93,15 +93,21 @@ function PackageForm({
 }) {
   const [pending, start] = useTransition();
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
   const [d, setD] = useState(initial);
   const [specsText, setSpecsText] = useState(specsToText(initial.specs));
 
   function submit() {
+    setError("");
     start(async () => {
-      await onSubmit({ ...d, specs: textToSpecs(specsText) });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 1500);
-      onDone?.();
+      try {
+        await onSubmit({ ...d, specs: textToSpecs(specsText) });
+        setSaved(true);
+        setTimeout(() => setSaved(false), 1500);
+        onDone?.();
+      } catch {
+        setError("Uložení se nezdařilo. Zkontrolujte přihlášení a zkuste to znovu.");
+      }
     });
   }
 
@@ -125,6 +131,7 @@ function PackageForm({
         <button onClick={submit} disabled={pending} className={btnPrimary}>
           {pending ? <Loader2 size={14} className="animate-spin" /> : saved ? <Check size={14} /> : <Save size={14} />} {saved ? "Uloženo" : submitLabel}
         </button>
+        {error && <span className="text-[12.5px] font-semibold text-red-bright">{error}</span>}
         <label className="flex items-center gap-2 font-mono text-[12px] text-ink-muted">
           <input type="checkbox" checked={d.featured} onChange={(e) => setD({ ...d, featured: e.target.checked })} className="accent-red" /> doporučujeme
         </label>

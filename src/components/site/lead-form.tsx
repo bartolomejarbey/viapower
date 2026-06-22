@@ -85,6 +85,10 @@ export function LeadForm({ source = "web", withMessage = false, t }: { source?: 
           </div>
         </div>
       )}
+      <label className="mb-4 flex items-start gap-2.5 text-[12.5px] leading-snug text-ink-muted">
+        <input type="checkbox" name="consent" required className="mt-0.5 accent-red" aria-label="Souhlas se zpracováním osobních údajů" />
+        <span>{c("form.consent", "Souhlasím se zpracováním osobních údajů za účelem vyřízení mé poptávky.")}</span>
+      </label>
       <button
         type="submit"
         disabled={state === "loading"}

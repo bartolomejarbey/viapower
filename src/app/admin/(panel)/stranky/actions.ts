@@ -102,7 +102,8 @@ export async function createPage(): Promise<string> {
       blocks: {
         create: [
           { type: "hero", data: JSON.stringify(BLOCK_DEF.hero.make()), order: 0 },
-          { type: "cta", data: JSON.stringify(BLOCK_DEF.cta.make()), order: 1 },
+          { type: "richtext", data: JSON.stringify(BLOCK_DEF.richtext.make()), order: 1 },
+          { type: "cta", data: JSON.stringify(BLOCK_DEF.cta.make()), order: 2 },
         ],
       },
     },

@@ -9,7 +9,8 @@ import { logoPath, primaryNav, type NavLink } from "@/config/site";
 import { ArrowSwap } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
 
-export function SiteNav({ extraNav = [], phone, phoneHref, cta = "Konzultace", ctaHref = "/poptavkovy-formular/" }: { extraNav?: NavLink[]; phone: string; phoneHref: string; cta?: string; ctaHref?: string }) {
+export function SiteNav({ extraNav = [], phone, phoneHref, cta = "Konzultace", ctaHref = "/poptavkovy-formular/", logo = logoPath, logoLight = logoPath }: { extraNav?: NavLink[]; phone: string; phoneHref: string; cta?: string; ctaHref?: string; logo?: string; logoLight?: string }) {
+  const invert = logoLight === logo;
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -45,11 +46,11 @@ export function SiteNav({ extraNav = [], phone, phoneHref, cta = "Konzultace", c
     >
       <nav className="mx-auto flex max-w-[1400px] items-center justify-between px-5 md:px-9">
         <Link href="/" className="shrink-0" aria-label="Viapower — domů">
-          {/* black source logo, inverted to white for the dark brand */}
+          {/* default black source logo is inverted to white; a custom light logo is shown as-is */}
           <img
-            src={logoPath}
+            src={logoLight}
             alt="Viapower"
-            className="h-7 w-auto [filter:brightness(0)_invert(1)]"
+            className={`h-7 w-auto${invert ? " [filter:brightness(0)_invert(1)]" : ""}`}
           />
         </Link>
 
@@ -117,18 +118,18 @@ export function SiteNav({ extraNav = [], phone, phoneHref, cta = "Konzultace", c
       />
 
       {/* mobile drawer */}
-      {open && <MobileMenu nav={nav} phone={phone} phoneHref={phoneHref} cta={cta} ctaHref={ctaHref} onClose={() => setOpen(false)} />}
+      {open && <MobileMenu nav={nav} phone={phone} phoneHref={phoneHref} cta={cta} ctaHref={ctaHref} logoLight={logoLight} invert={invert} onClose={() => setOpen(false)} />}
     </header>
   );
 }
 
-function MobileMenu({ nav, phone, phoneHref, cta, ctaHref, onClose }: { nav: NavLink[]; phone: string; phoneHref: string; cta: string; ctaHref: string; onClose: () => void }) {
+function MobileMenu({ nav, phone, phoneHref, cta, ctaHref, logoLight, invert, onClose }: { nav: NavLink[]; phone: string; phoneHref: string; cta: string; ctaHref: string; logoLight: string; invert: boolean; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-[60] lg:hidden">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
       <div className="absolute right-0 top-0 flex h-full w-[88%] max-w-sm flex-col border-l border-line-strong bg-surface">
         <div className="flex items-center justify-between border-b border-line px-5 py-4">
-          <img src={logoPath} alt="Viapower" className="h-6 w-auto [filter:brightness(0)_invert(1)]" />
+          <img src={logoLight} alt="Viapower" className={`h-6 w-auto${invert ? " [filter:brightness(0)_invert(1)]" : ""}`} />
           <button onClick={onClose} className="grid h-10 w-10 place-items-center text-ink" aria-label="Zavřít menu">
             <X size={22} />
           </button>
