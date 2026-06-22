@@ -204,6 +204,8 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug:
           title={<Editable k={`kontakt.title.${isMorava ? "morava" : "cechy"}`}>{setting(t, `kontakt.title.${isMorava ? "morava" : "cechy"}`, isMorava ? "Pobočka Morava" : "Pobočka Čechy")}</Editable>}
           sub={<Editable k="kontakt.sub">{setting(t, "kontakt.sub", "Ozvěte se nám — rádi probereme váš projekt. Konzultace je zdarma a bez závazku.")}</Editable>}
           crumbs={crumbs}
+          image={setting(t, "kontakt.image", "/img/real/firmy.jpg")}
+          imageKey="kontakt.image"
         />
         <section className="mx-auto grid max-w-[1400px] gap-12 px-5 py-20 md:px-9 lg:grid-cols-[1fr_1fr]">
           <div>

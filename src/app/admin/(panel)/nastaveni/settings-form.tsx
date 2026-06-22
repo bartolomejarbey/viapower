@@ -19,6 +19,7 @@ const FIELDS: FieldDef[] = [
   { key: "ref.image", label: "Reference — obrázek záhlaví", type: "image", group: "Záhlaví podstránek" },
   { key: "car.image", label: "Kariéra — obrázek záhlaví", type: "image", group: "Záhlaví podstránek" },
   { key: "svc.image", label: "Služby — obrázek záhlaví", type: "image", group: "Záhlaví podstránek" },
+  { key: "kontakt.image", label: "Kontakt / pobočky — obrázek záhlaví", type: "image", group: "Záhlaví podstránek" },
 
   { key: "announcement.text", label: "Text oznamovacího pruhu", type: "input", group: "Oznamovací pruh" },
   { key: "announcement.ctaText", label: "Text odkazu v pruhu", type: "input", group: "Oznamovací pruh" },
