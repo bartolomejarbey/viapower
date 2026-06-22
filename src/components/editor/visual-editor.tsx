@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { nanoid } from "nanoid";
 import {
   DndContext, DragOverlay, KeyboardSensor, PointerSensor, pointerWithin, useDraggable, useDroppable, useSensor, useSensors,
@@ -17,7 +18,10 @@ import {
 import { savePage, deletePage, type PageMeta } from "@/app/admin/(panel)/stranky/actions";
 import { MediaPicker } from "@/components/editor/media-picker";
 import { EditableSection, type Data } from "@/components/editor/editor-section";
-import { BLOCK_DEFS, BLOCK_DEF, type BlockType } from "@/lib/blocks";
+import { BLOCK_DEFS, BLOCK_DEF, getLayout, widthClass, type BlockType, type WidthPreset, type Layout } from "@/lib/blocks";
+
+// Per-type natural width — mirrors section-renderer so the canvas matches the live site.
+const CANVAS_WIDTH: Record<string, WidthPreset> = { richtext: "narrow", steps: "narrow", cta: "normal", leadform: "normal" };
 import { cn } from "@/lib/utils";
 
 const PAL_ICONS: Record<string, React.ComponentType<{ size?: number }>> = {
@@ -60,6 +64,12 @@ export function VisualEditor({ page }: { page: InitialPage }) {
   const [pending, start] = useTransition();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+  const router = useRouter();
+
+  function leaveEditor() {
+    if (dirty && !confirm("Máte neuložené změny. Opustit editor bez uložení?")) return;
+    router.push("/admin/stranky/");
+  }
 
   // Warn before losing unsaved changes (tab close / hard navigation).
   useEffect(() => {
@@ -138,9 +148,9 @@ export function VisualEditor({ page }: { page: InitialPage }) {
     <div className="flex h-screen flex-col bg-base text-ink">
       <header className="flex shrink-0 items-center justify-between gap-3 border-b border-line bg-surface px-4 py-2.5">
         <div className="flex min-w-0 items-center gap-3">
-          <Link href="/admin/stranky/" className="grid h-9 w-9 shrink-0 place-items-center border border-line-strong text-ink-muted transition-colors hover:border-white hover:text-ink" aria-label="Zpět">
+          <button onClick={leaveEditor} className="grid h-9 w-9 shrink-0 place-items-center border border-line-strong text-ink-muted transition-colors hover:border-white hover:text-ink" aria-label="Zpět do administrace" title="Zpět do administrace">
             <ArrowLeft size={16} />
-          </Link>
+          </button>
           <div className="min-w-0">
             <div className="truncate text-[14px] font-bold">{meta.title || "Bez názvu"}</div>
             <div className="truncate text-[11px] text-ink-dim">/{meta.slug}/ {dirty && <span className="text-red-bright">· neuloženo</span>}</div>
@@ -286,7 +296,9 @@ function CanvasBlock({ block, selected, onSelect, onChange, onRemove, onDuplicat
           <button onClick={(e) => { e.stopPropagation(); onRemove(); }} className="grid h-7 w-7 place-items-center border border-red/40 bg-elevated text-red-bright hover:bg-red hover:text-white" aria-label="Smazat"><Trash2 size={13} /></button>
         </div>
         {known ? (
-          <EditableSection type={block.type} data={block.data} onChange={onChange} onPickImage={onPickImage} />
+          <div className={cn("mx-auto", widthClass(getLayout(block.data), CANVAS_WIDTH[block.type] ?? "wide"))}>
+            <EditableSection type={block.type} data={block.data} onChange={onChange} onPickImage={onPickImage} />
+          </div>
         ) : (
           <p className="border border-dashed border-line-strong p-4 text-[13px] text-ink-dim">Tento blok („{block.type}“) tento editor nezná, ale zůstane na stránce zachován.</p>
         )}
@@ -349,17 +361,6 @@ function BlockInspector({ block, onChange, onPickImage, onClose }: { block: Edit
         </>
       )}
 
-      {block.type === "heading" && (
-        <>
-          <label className={labelCls}>Zarovnání</label>
-          <div className="flex gap-2">
-            {([["left", "Vlevo"], ["center", "Na střed"]] as const).map(([v, l]) => (
-              <button key={v} onClick={() => set("align", v)} className={cn("flex-1 border px-3 py-2 text-[11.5px] font-bold uppercase", (d.align || "left") === v ? "border-red text-red-bright" : "border-line-strong text-ink-muted hover:text-ink")}>{l}</button>
-            ))}
-          </div>
-        </>
-      )}
-
       {block.type === "features" && (
         <>
           <label className={labelCls}>Počet sloupců</label>
@@ -399,6 +400,10 @@ function BlockInspector({ block, onChange, onPickImage, onClose }: { block: Edit
         </>
       )}
 
+      {block.type !== "hero" && block.type !== "spacer" && (
+        <LayoutControls layout={getLayout(d) ?? {}} onChange={(l) => set("layout", l)} />
+      )}
+
       {"bg" in d && <BgToggle value={sv(d.bg)} onChange={(v) => set("bg", v)} />}
 
       {["features", "steps", "stats", "testimonials", "faq", "gallery", "logos"].includes(block.type) && (
@@ -408,6 +413,35 @@ function BlockInspector({ block, onChange, onPickImage, onClose }: { block: Edit
       {!("accent" in d) && !("bg" in d) && block.type !== "hero" && block.type !== "spacer" && (
         <p className="text-[12.5px] leading-relaxed text-ink-dim">Tento blok upravíte přímo na stránce — klikněte do textu a pište.</p>
       )}
+    </div>
+  );
+}
+
+function SegRow({ label, value, options, onPick }: { label: string; value: string; options: [string, string][]; onPick: (v: string) => void }) {
+  return (
+    <div className="mb-3">
+      <label className={labelCls}>{label}</label>
+      <div className="flex flex-wrap gap-1.5">
+        {options.map(([v, l]) => (
+          <button key={v} type="button" onClick={() => onPick(v)} className={cn("border px-2.5 py-1.5 text-[11px] font-bold", value === v ? "border-red text-red-bright" : "border-line-strong text-ink-muted hover:text-ink")}>{l}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const PAD_OPTS: [string, string][] = [["", "Výchozí"], ["none", "Žádné"], ["sm", "Malé"], ["md", "Střední"], ["lg", "Velké"]];
+
+/** Padding / width / alignment presets — applied identically on the live site (blocks.ts helpers). */
+function LayoutControls({ layout, onChange }: { layout: Layout; onChange: (l: Layout) => void }) {
+  const set = (patch: Partial<Layout>) => onChange({ ...layout, ...patch });
+  return (
+    <div className="mt-4 border-t border-line pt-4">
+      <p className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.12em] text-red-bright">Rozložení</p>
+      <SegRow label="Šířka obsahu" value={layout.width ?? ""} options={[["", "Výchozí"], ["narrow", "Úzká"], ["normal", "Normální"], ["wide", "Široká"], ["full", "Celá šířka"]]} onPick={(v) => set({ width: (v || undefined) as Layout["width"] })} />
+      <SegRow label="Zarovnání" value={layout.align ?? ""} options={[["", "Výchozí"], ["left", "Vlevo"], ["center", "Na střed"]]} onPick={(v) => set({ align: (v || undefined) as Layout["align"] })} />
+      <SegRow label="Odsazení nahoře" value={layout.padTop ?? ""} options={PAD_OPTS} onPick={(v) => set({ padTop: (v || undefined) as Layout["padTop"] })} />
+      <SegRow label="Odsazení dole" value={layout.padBottom ?? ""} options={PAD_OPTS} onPick={(v) => set({ padBottom: (v || undefined) as Layout["padBottom"] })} />
     </div>
   );
 }

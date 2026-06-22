@@ -2,8 +2,39 @@
 // public SectionRenderer and the visual editor, so they never drift.
 // Pure data + registry — no server/client-only imports.
 
+import { cn } from "@/lib/utils";
+
 export type Btn = { label: string; href: string };
 export type BlockBg = "base" | "surface";
+
+// ── Per-block layout controls (padding / width / alignment) ───────────────
+// Optional + back-compatible: when `layout` is absent every block renders
+// byte-identical to before (each block keeps its own width fallback).
+export type PadPreset = "none" | "sm" | "md" | "lg";
+export type WidthPreset = "narrow" | "normal" | "wide" | "full";
+export type AlignPreset = "left" | "center";
+export type Layout = { padTop?: PadPreset; padBottom?: PadPreset; width?: WidthPreset; align?: AlignPreset };
+
+const PAD_T: Record<PadPreset, string> = { none: "pt-0", sm: "pt-10 md:pt-12", md: "pt-16 md:pt-20", lg: "pt-24 md:pt-28" };
+const PAD_B: Record<PadPreset, string> = { none: "pb-0", sm: "pb-10 md:pb-12", md: "pb-16 md:pb-20", lg: "pb-24 md:pb-28" };
+const WIDTHS: Record<WidthPreset, string> = { narrow: "max-w-3xl", normal: "max-w-[1100px]", wide: "max-w-[1400px]", full: "max-w-none" };
+
+export function getLayout(d: Record<string, unknown>): Layout | undefined {
+  const l = d.layout;
+  return l && typeof l === "object" ? (l as Layout) : undefined;
+}
+/** Vertical padding classes for a section band (horizontal px stays on the band). */
+export function padClass(l: Layout | undefined, fallback = "py-24 md:py-28"): string {
+  if (!l || (!l.padTop && !l.padBottom)) return fallback;
+  return cn(l.padTop ? PAD_T[l.padTop] : "pt-24 md:pt-28", l.padBottom ? PAD_B[l.padBottom] : "pb-24 md:pb-28");
+}
+/** Content max-width — uses the block's own fallback when unset. */
+export function widthClass(l: Layout | undefined, fallback: WidthPreset): string {
+  return WIDTHS[l?.width ?? fallback];
+}
+export function isCenter(l: Layout | undefined, fallback = false): boolean {
+  return l?.align ? l.align === "center" : fallback;
+}
 
 export type IconName =
   | "Sun" | "Home" | "Building2" | "Thermometer" | "Plug" | "Wind" | "Cpu"

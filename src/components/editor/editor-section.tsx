@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { arrayMove } from "@dnd-kit/sortable";
 import { RichText } from "@/components/admin/rich-text";
-import { ICON_NAMES, normalizeLogos, type BlockType } from "@/lib/blocks";
+import { ICON_NAMES, normalizeLogos, getLayout, isCenter, type BlockType } from "@/lib/blocks";
 import { cn } from "@/lib/utils";
 
 export type Data = Record<string, unknown>;
@@ -63,7 +63,7 @@ function ImageField({ url, onPick, onClear, className, label = "Vybrat obrázek"
 }
 
 function SectionHead({ d, set }: { d: Data; set: SetFn }) {
-  const center = d.align === "center";
+  const center = isCenter(getLayout(d), d.align === "center");
   const ctr = center ? " text-center" : "";
   return (
     <div className={cn("mb-5", center && "mx-auto max-w-3xl text-center")}>

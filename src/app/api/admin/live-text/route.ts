@@ -34,7 +34,10 @@ export async function POST(req: Request) {
   );
 
   revalidatePath("/", "layout");
-  if (body.path && body.path.startsWith("/")) revalidatePath(body.path);
+  if (body.path && body.path.startsWith("/")) {
+    const p = body.path.endsWith("/") ? body.path : `${body.path}/`; // match trailingSlash:true cache key
+    revalidatePath(p);
+  }
 
   return NextResponse.json({ ok: true, saved: entries.length });
 }

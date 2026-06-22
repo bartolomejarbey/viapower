@@ -11,7 +11,7 @@ import { MiniBars } from "@/components/ui/mini-bars";
 import { FaqAccordion } from "@/components/ui/faq-accordion";
 import { LeadForm } from "@/components/site/lead-form";
 import type { Company } from "@/lib/company";
-import { bgClass, normalizeLogos, parseBlockData, type AnyBlock, type BlockBg } from "@/lib/blocks";
+import { bgClass, normalizeLogos, parseBlockData, padClass, widthClass, getLayout, isCenter, type AnyBlock, type BlockBg, type Layout, type WidthPreset } from "@/lib/blocks";
 import { cn } from "@/lib/utils";
 
 const ICONS: Record<string, LucideIcon> = {
@@ -56,13 +56,18 @@ function SectionHead({ eyebrow, title, accent, sub, center }: { eyebrow?: string
   );
 }
 
-function band(bg: BlockBg | undefined, extra?: string) {
-  return cn("relative overflow-hidden px-5 py-24 md:px-9 md:py-28", bgClass(bg), extra);
+function band(bg: BlockBg | undefined, layout?: Layout, extra?: string, padFallback = "py-24 md:py-28") {
+  return cn("relative overflow-hidden px-5 md:px-9", padClass(layout, padFallback), bgClass(bg), extra);
+}
+/** Content-width wrapper class honoring the block's layout (falls back to the block's natural width). */
+function inner(layout: Layout | undefined, fallback: WidthPreset) {
+  return cn("mx-auto", widthClass(layout, fallback));
 }
 
 function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: Record<string, string> }) {
   const d = block.data;
   const bg = s(d.bg, "base") as BlockBg;
+  const layout = getLayout(d);
   const tt = (k: string, f: string) => t?.[k] ?? f;
 
   switch (block.type) {
@@ -121,9 +126,9 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
     /* ── HEADING ──────────────────────────────────────────── */
     case "heading":
       return (
-        <section className={band(bg)}>
-          <div className="mx-auto max-w-[1400px]">
-            <SectionHead eyebrow={s(d.eyebrow)} title={s(d.title)} accent={s(d.accent)} sub={s(d.sub)} center={d.align === "center"} />
+        <section className={band(bg, layout)}>
+          <div className={inner(layout, "wide")}>
+            <SectionHead eyebrow={s(d.eyebrow)} title={s(d.title)} accent={s(d.accent)} sub={s(d.sub)} center={isCenter(layout, d.align === "center")} />
           </div>
         </section>
       );
@@ -131,8 +136,8 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
     /* ── RICHTEXT ─────────────────────────────────────────── */
     case "richtext":
       return (
-        <section className={band(bg, "!py-16 md:!py-20")}>
-          <Reveal className="mx-auto max-w-3xl">
+        <section className={band(bg, layout, undefined, "py-16 md:py-20")}>
+          <Reveal className={inner(layout, "narrow")}>
             <div className="cms-html text-[16.5px] leading-relaxed text-ink-muted" dangerouslySetInnerHTML={{ __html: s(d.html) }} />
           </Reveal>
         </section>
@@ -144,8 +149,8 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
       const image = s(d.image);
       const button = (d.button as { label?: string; href?: string }) ?? {};
       return (
-        <section className={band(bg)}>
-          <div className="mx-auto grid max-w-[1400px] items-center gap-12 lg:grid-cols-2">
+        <section className={band(bg, layout)}>
+          <div className={cn(inner(layout, "wide"), "grid items-center gap-12 lg:grid-cols-2")}>
             <Reveal className={cn("overflow-hidden border border-line-strong", right && "lg:order-2")}>
               {image ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -175,9 +180,9 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
       const items = arr<{ icon?: string; title?: string; text?: string }>(d.items);
       const cols = Number(d.columns) || 3;
       return (
-        <section className={band(bg)}>
-          <div className="mx-auto max-w-[1400px]">
-            <SectionHead eyebrow={s(d.eyebrow)} title={s(d.title)} accent={s(d.accent)} sub={s(d.sub)} />
+        <section className={band(bg, layout)}>
+          <div className={inner(layout, "wide")}>
+            <SectionHead eyebrow={s(d.eyebrow)} title={s(d.title)} accent={s(d.accent)} sub={s(d.sub)} center={isCenter(layout)} />
             <GlowCards>
               <Stagger className={cn("mt-12 grid gap-4 sm:grid-cols-2", cols >= 3 ? "lg:grid-cols-3" : cols === 2 ? "lg:grid-cols-2" : "")}>
                 {items.map((it, i) => {
@@ -206,9 +211,9 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
     case "steps": {
       const items = arr<{ title?: string; text?: string }>(d.items);
       return (
-        <section className={band(bg)}>
-          <div className="mx-auto max-w-3xl">
-            <SectionHead eyebrow={s(d.eyebrow)} title={s(d.title)} accent={s(d.accent)} sub={s(d.sub)} />
+        <section className={band(bg, layout)}>
+          <div className={inner(layout, "narrow")}>
+            <SectionHead eyebrow={s(d.eyebrow)} title={s(d.title)} accent={s(d.accent)} sub={s(d.sub)} center={isCenter(layout)} />
             <ol className="rich-ol mt-10">
               {items.map((it, i) => (
                 <li key={i}>
@@ -228,11 +233,11 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
     case "stats": {
       const items = arr<{ value?: string; label?: string; desc?: string }>(d.items);
       return (
-        <section className={band(bg, "!py-14")}>
-          <div className="mx-auto max-w-[1400px]">
+        <section className={band(bg, layout, undefined, "py-14")}>
+          <div className={inner(layout, "wide")}>
             {(s(d.title) || s(d.eyebrow) || s(d.sub)) ? (
               <div className="mb-10">
-                <SectionHead eyebrow={s(d.eyebrow)} title={s(d.title)} accent={s(d.accent)} sub={s(d.sub)} />
+                <SectionHead eyebrow={s(d.eyebrow)} title={s(d.title)} accent={s(d.accent)} sub={s(d.sub)} center={isCenter(layout)} />
               </div>
             ) : null}
             <Stagger className="grid grid-cols-2 border border-line-strong lg:grid-cols-4">
@@ -258,9 +263,9 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
     case "pricing": {
       const items = arr<{ name?: string; tagline?: string; specs?: [string, string][]; href?: string; featured?: boolean; ctaLabel?: string; badge?: string }>(d.items);
       return (
-        <section className={band(bg)}>
-          <div className="mx-auto max-w-[1400px]">
-            <SectionHead eyebrow={s(d.eyebrow)} title={s(d.title)} accent={s(d.accent)} sub={s(d.sub)} center />
+        <section className={band(bg, layout)}>
+          <div className={inner(layout, "wide")}>
+            <SectionHead eyebrow={s(d.eyebrow)} title={s(d.title)} accent={s(d.accent)} sub={s(d.sub)} center={isCenter(layout, true)} />
             <GlowCards>
               <Stagger className={cn("mt-12 grid gap-4", items.length >= 3 ? "lg:grid-cols-3" : items.length === 2 ? "lg:grid-cols-2" : "mx-auto max-w-md")}>
                 {items.map((p, i) => (
@@ -297,8 +302,8 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
     case "gallery": {
       const items = arr<{ image?: string; label?: string; title?: string }>(d.items);
       return (
-        <section className={band(bg)}>
-          <div className="mx-auto max-w-[1400px]">
+        <section className={band(bg, layout)}>
+          <div className={inner(layout, "wide")}>
             <SectionHead eyebrow={s(d.eyebrow)} title={s(d.title)} accent={s(d.accent)} />
             <Stagger className="mt-12 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
               {items.map((it, i) => (
@@ -329,9 +334,9 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
     case "testimonials": {
       const items = arr<{ text?: string; author?: string; role?: string; image?: string }>(d.items);
       return (
-        <section className={band(bg)}>
-          <div className="mx-auto max-w-[1400px]">
-            <SectionHead eyebrow={s(d.eyebrow)} title={s(d.title)} accent={s(d.accent)} center />
+        <section className={band(bg, layout)}>
+          <div className={inner(layout, "wide")}>
+            <SectionHead eyebrow={s(d.eyebrow)} title={s(d.title)} accent={s(d.accent)} center={isCenter(layout, true)} />
             <Stagger className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {items.map((it, i) => (
                 <StaggerItem key={i} className="h-full">
@@ -363,9 +368,9 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
     case "faq": {
       const items = arr<{ q?: string; a?: string }>(d.items).map((it) => ({ q: s(it.q), a: s(it.a) }));
       return (
-        <section className={band(bg)}>
-          <div className="mx-auto max-w-[1400px]">
-            <SectionHead eyebrow={s(d.eyebrow)} title={s(d.title)} accent={s(d.accent)} center />
+        <section className={band(bg, layout)}>
+          <div className={inner(layout, "wide")}>
+            <SectionHead eyebrow={s(d.eyebrow)} title={s(d.title)} accent={s(d.accent)} center={isCenter(layout, true)} />
             <div className="mt-12">
               <FaqAccordion items={items} startOpen={-1} />
             </div>
@@ -405,7 +410,7 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
     /* ── CTA ──────────────────────────────────────────────── */
     case "cta":
       return (
-        <section className={cn("relative overflow-hidden border-t border-line px-5 py-24 md:px-9", bgClass(s(d.bg, "surface") as BlockBg))}>
+        <section className={cn("relative overflow-hidden border-t border-line px-5 md:px-9", padClass(layout), bgClass(s(d.bg, "surface") as BlockBg))}>
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_75%_40%,rgba(192,15,10,0.16),transparent_55%)] [animation:vp-breathe_11s_ease-in-out_infinite]" />
           <Reveal className="relative mx-auto max-w-[1100px] text-center">
             <h2 className="text-[clamp(2.2rem,4.4vw,3.5rem)] font-bold leading-tight text-ink">{s(d.title)}</h2>
@@ -425,10 +430,10 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
     /* ── LEAD FORM ────────────────────────────────────────── */
     case "leadform":
       return (
-        <section className={band(bg)}>
-          <div className="mx-auto grid max-w-[1100px] items-center gap-12 lg:grid-cols-2">
+        <section className={band(bg, layout)}>
+          <div className={cn(inner(layout, "normal"), "grid items-center gap-12 lg:grid-cols-2")}>
             <div>
-              <SectionHead eyebrow={s(d.eyebrow)} title={s(d.title)} accent={s(d.accent)} sub={s(d.sub)} />
+              <SectionHead eyebrow={s(d.eyebrow)} title={s(d.title)} accent={s(d.accent)} sub={s(d.sub)} center={isCenter(layout)} />
               <div className="mt-7 flex flex-col gap-2.5 text-[15px] text-ink-muted">
                 <a href={company.phoneHref} className="flex items-center gap-2.5 hover:text-red-bright"><Phone size={16} className="text-red" /> {company.phone}</a>
                 <a href={`mailto:${company.email}`} className="flex items-center gap-2.5 hover:text-red-bright"><Mail size={16} className="text-red" /> {company.email}</a>

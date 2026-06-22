@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Check, FileText, LayoutDashboard, Loader2, Pencil, Settings, X } from "lucide-react";
 import { MediaPicker } from "@/components/editor/media-picker";
 
@@ -22,6 +22,7 @@ export function AdminEditBar() {
   const changesRef = useRef(changes);
   useEffect(() => { changesRef.current = changes; }, [changes]);
   const pathname = usePathname();
+  const router = useRouter();
 
   // admin check
   useEffect(() => {
@@ -62,7 +63,7 @@ export function AdminEditBar() {
   // capture text edits + intercept image clicks while editing
   useEffect(() => {
     if (!on) return;
-    const onFocusOut = (e: FocusEvent) => {
+    const capture = (e: Event) => {
       const el = (e.target as HTMLElement)?.closest?.("[data-edit]") as HTMLElement | null;
       const key = el?.getAttribute("data-edit");
       if (el && key) setChanges((c) => ({ ...c, [key]: el.innerText.replace(/\n+/g, " ").trim() }));
@@ -78,10 +79,12 @@ export function AdminEditBar() {
       }
       if (target.closest?.("[data-edit]") && target.closest?.("a")) e.preventDefault();
     };
-    document.addEventListener("focusout", onFocusOut);
+    document.addEventListener("focusout", capture);
+    document.addEventListener("input", capture, true); // keep change count live so Save enables mid-edit
     document.addEventListener("click", onClick, true);
     return () => {
-      document.removeEventListener("focusout", onFocusOut);
+      document.removeEventListener("focusout", capture);
+      document.removeEventListener("input", capture, true);
       document.removeEventListener("click", onClick, true);
     };
   }, [on]);
@@ -104,7 +107,7 @@ export function AdminEditBar() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ changes: payload, path: pathname }),
       });
-      if (res.ok) { window.location.reload(); return; } // keeps ?edit=1
+      if (res.ok) { setChanges({}); router.refresh(); return; } // soft refresh keeps ?edit=1 + scroll
       alert(res.status === 401 ? "Přihlášení vypršelo. Přihlaste se znovu." : "Uložení selhalo. Zkuste to znovu.");
     } catch {
       alert("Uložení selhalo — zkontrolujte připojení.");
