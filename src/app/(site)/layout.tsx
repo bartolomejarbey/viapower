@@ -8,6 +8,7 @@ import { CursorLight } from "@/components/site/cursor-light";
 import { CookieConsent } from "@/components/site/cookie-consent";
 import { MarketingTags } from "@/components/site/marketing-tags";
 import { getNavPages, getSettings, setting } from "@/lib/cms";
+import { primaryNav, type NavLink } from "@/config/site";
 import { getCompany } from "@/lib/company";
 import { getMarketing } from "@/lib/marketing";
 import type { Metadata } from "next";
@@ -26,7 +27,21 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const [navPages, settings, company, marketing] = await Promise.all([getNavPages(), getSettings(), getCompany(), getMarketing()]);
-  const extraNav = navPages.map((p) => ({ label: p.navLabel || p.title, href: `/${p.slug}/` }));
+  // Build the nested menu: CMS pages slot under their chosen parent group; null-parent pages become top-level items.
+  const childrenByParent = new Map<string, { label: string; href: string }[]>();
+  const topLevel: NavLink[] = [];
+  for (const p of navPages) {
+    const item = { label: p.navLabel || p.title, href: `/${p.slug}/` };
+    if (p.navParent) childrenByParent.set(p.navParent, [...(childrenByParent.get(p.navParent) ?? []), item]);
+    else topLevel.push(item);
+  }
+  const nav: NavLink[] = [
+    ...primaryNav.map((n) => {
+      const extra = childrenByParent.get(n.href);
+      return extra ? { ...n, children: [...(n.children ?? []), ...extra] } : n;
+    }),
+    ...topLevel,
+  ];
 
   return (
     <>
@@ -36,7 +51,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         ctaText={setting(settings, "announcement.ctaText", "Spočítat moji nabídku →")}
         ctaHref={setting(settings, "announcement.ctaHref", "/poptavkovy-formular/")}
       />
-      <SiteNav extraNav={extraNav} phone={company.phone} phoneHref={company.phoneHref} cta={setting(settings, "nav.cta", "Konzultace")} ctaHref={setting(settings, "nav.ctaHref", "/poptavkovy-formular/")} logo={company.logo} logoLight={company.logoLight} />
+      <SiteNav nav={nav} phone={company.phone} phoneHref={company.phoneHref} cta={setting(settings, "nav.cta", "Konzultace")} ctaHref={setting(settings, "nav.ctaHref", "/poptavkovy-formular/")} logo={company.logo} logoLight={company.logoLight} />
       <main>{children}</main>
       <SiteFooter />
       <CursorLight />

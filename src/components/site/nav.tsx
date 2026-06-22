@@ -9,12 +9,11 @@ import { logoPath, primaryNav, type NavLink } from "@/config/site";
 import { ArrowSwap } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
 
-export function SiteNav({ extraNav = [], phone, phoneHref, cta = "Konzultace", ctaHref = "/poptavkovy-formular/", logo = logoPath, logoLight = logoPath }: { extraNav?: NavLink[]; phone: string; phoneHref: string; cta?: string; ctaHref?: string; logo?: string; logoLight?: string }) {
+export function SiteNav({ nav = primaryNav, phone, phoneHref, cta = "Konzultace", ctaHref = "/poptavkovy-formular/", logo = logoPath, logoLight = logoPath }: { nav?: NavLink[]; phone: string; phoneHref: string; cta?: string; ctaHref?: string; logo?: string; logoLight?: string }) {
   const invert = logoLight === logo;
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  const nav = [...primaryNav, ...extraNav];
 
   // red telemetry hairline — the site's single scroll-progress readout
   const reduce = useReducedMotion();

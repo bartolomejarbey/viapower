@@ -25,6 +25,8 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
           metaDescription: page.metaDescription,
           published: page.published,
           showInNav: page.showInNav,
+          navParent: page.navParent ?? null,
+          noindex: page.noindex,
           navLabel: page.navLabel,
           blocks: page.blocks.map((b) => ({ type: b.type, data: b.data })),
         }}

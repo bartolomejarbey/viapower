@@ -123,6 +123,8 @@ export type PageMeta = {
   metaDescription: string;
   published: boolean;
   showInNav: boolean;
+  navParent: string | null;
+  noindex: boolean;
   navLabel: string;
 };
 
@@ -145,7 +147,7 @@ export async function savePage(pageId: string, meta: PageMeta, blocks: { type: s
       where: { id: pageId },
       data: {
         title: meta.title, slug, metaDescription: meta.metaDescription,
-        published: meta.published, showInNav: meta.showInNav, navLabel: meta.navLabel,
+        published: meta.published, showInNav: meta.showInNav, navParent: meta.navParent, noindex: meta.noindex, navLabel: meta.navLabel,
       },
     }),
     db.block.deleteMany({ where: { pageId } }),

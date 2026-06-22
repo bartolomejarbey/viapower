@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
-import { company } from "@/config/site";
+import { getCompany } from "@/lib/company";
 
-export default function robots(): MetadataRoute.Robots {
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const { url } = await getCompany();
   return {
     rules: { userAgent: "*", allow: "/", disallow: ["/admin", "/api/"] },
-    sitemap: `${company.url}/sitemap.xml`,
-    host: company.url,
+    sitemap: `${url}/sitemap.xml`,
+    host: url,
   };
 }

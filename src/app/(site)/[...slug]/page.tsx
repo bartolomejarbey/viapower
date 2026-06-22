@@ -60,7 +60,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   // published CMS pages (incl. taken-over migrated pages) win over the migration snapshot
   const cms = await getCmsPage(slug.join("/"));
   if (cms) {
-    return { title: cms.title, description: cms.metaDescription || undefined, alternates: { canonical: path } };
+    const desc = cms.metaDescription || undefined;
+    return {
+      title: cms.title,
+      description: desc,
+      alternates: { canonical: path },
+      robots: cms.noindex ? { index: false, follow: true } : undefined,
+      openGraph: { title: cms.title, description: desc, url: path, type: "article", ...(cms.heroImage ? { images: [cms.heroImage] } : {}) },
+    };
   }
   const page = getPageBySegments(slug);
   if (page) {

@@ -62,9 +62,11 @@ model Page {
   metaDescription String   @default("")
   published       Boolean  @default(false)
   showInNav       Boolean  @default(false)
+  navParent       String?  // href of a primaryNav parent (e.g. "/sluzby/") for nested menu placement; null = top-level
   navLabel        String?
   order           Int      @default(0)
   heroImage       String   @default("")
+  noindex         Boolean  @default(false)
   blocks          Block[]
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

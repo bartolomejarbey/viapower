@@ -23,6 +23,7 @@ import { BLOCK_DEFS, BLOCK_DEF, getLayout, widthClass, type BlockType, type Widt
 // Per-type natural width — mirrors section-renderer so the canvas matches the live site.
 const CANVAS_WIDTH: Record<string, WidthPreset> = { richtext: "narrow", steps: "narrow", cta: "normal", leadform: "normal" };
 import { cn } from "@/lib/utils";
+import { navGroups } from "@/config/site";
 
 const PAL_ICONS: Record<string, React.ComponentType<{ size?: number }>> = {
   LayoutTemplate, Heading, Type, Columns2, LayoutGrid, ListOrdered, BarChart3, Package, Images, Quote,
@@ -36,7 +37,7 @@ type EditorBlock = { id: string; type: BlockType; data: Data };
 
 type InitialPage = {
   id: string; title: string; slug: string; metaDescription: string;
-  published: boolean; showInNav: boolean; navLabel: string | null;
+  published: boolean; showInNav: boolean; navParent: string | null; noindex: boolean; navLabel: string | null;
   blocks: { type: string; data: string }[];
 };
 
@@ -47,7 +48,7 @@ function parse(s: string): Data {
 export function VisualEditor({ page }: { page: InitialPage }) {
   const [meta, setMeta] = useState<PageMeta>({
     title: page.title, slug: page.slug, metaDescription: page.metaDescription,
-    published: page.published, showInNav: page.showInNav, navLabel: page.navLabel ?? "",
+    published: page.published, showInNav: page.showInNav, navParent: page.navParent, noindex: page.noindex, navLabel: page.navLabel ?? "",
   });
   // Keep ALL blocks — unknown types are preserved (rendered as a read-only
   // placeholder) so a save never silently destroys a block this build can't edit.
@@ -490,11 +491,22 @@ function PageSettings({ meta, onChange, pageId, onClose }: { meta: PageMeta; onC
       <input aria-label="URL adresa (slug)" value={meta.slug} onChange={(e) => onChange({ ...meta, slug: e.target.value })} className={inputCls} />
       <label className={labelCls}>Popis pro vyhledávače (SEO)</label>
       <textarea aria-label="Popis pro vyhledávače (SEO)" value={meta.metaDescription} onChange={(e) => onChange({ ...meta, metaDescription: e.target.value })} rows={3} className={inputCls} />
+      <label className={labelCls}>Umístění v menu</label>
+      <select
+        aria-label="Umístění v menu"
+        value={meta.showInNav ? (meta.navParent || "top") : ""}
+        onChange={(e) => { const v = e.target.value; onChange({ ...meta, showInNav: v !== "", navParent: v === "top" || v === "" ? null : v }); }}
+        className={inputCls}
+      >
+        <option value="">Nezobrazovat v menu</option>
+        <option value="top">Samostatná položka v menu</option>
+        {navGroups.map((g) => <option key={g.key} value={g.key}>Pod „{g.label}“ (rozbalovací menu)</option>)}
+      </select>
       <label className={labelCls}>Popisek v menu</label>
       <input aria-label="Popisek v menu" value={meta.navLabel} onChange={(e) => onChange({ ...meta, navLabel: e.target.value })} placeholder={meta.title} className={inputCls} />
       <div className="mt-5 flex flex-col gap-3">
         <label className="flex items-center gap-2.5 text-[13px] text-ink-muted"><input type="checkbox" checked={meta.published} onChange={(e) => onChange({ ...meta, published: e.target.checked })} className="accent-red" /> Publikováno (viditelné na webu)</label>
-        <label className="flex items-center gap-2.5 text-[13px] text-ink-muted"><input type="checkbox" checked={meta.showInNav} onChange={(e) => onChange({ ...meta, showInNav: e.target.checked })} className="accent-red" /> Zobrazit v hlavním menu</label>
+        <label className="flex items-center gap-2.5 text-[13px] text-ink-muted"><input type="checkbox" checked={meta.noindex} onChange={(e) => onChange({ ...meta, noindex: e.target.checked })} className="accent-red" /> Skrýt ve vyhledávačích (noindex)</label>
       </div>
       <button onClick={() => { if (!confirm("Opravdu smazat celou stránku?")) return; start(async () => { await deletePage(pageId); window.location.href = "/admin/stranky/"; }); }}
         className="mt-8 inline-flex items-center gap-2 border border-red/40 px-3.5 py-2 text-[11.5px] font-bold uppercase tracking-[0.08em] text-red-bright transition-colors hover:bg-red hover:text-white">

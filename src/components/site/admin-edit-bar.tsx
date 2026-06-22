@@ -19,6 +19,7 @@ export function AdminEditBar() {
   const [changes, setChanges] = useState<Record<string, string>>({});
   const [imgTarget, setImgTarget] = useState<{ key: string; el: HTMLElement } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [hasEditable, setHasEditable] = useState(true);
   const changesRef = useRef(changes);
   useEffect(() => { changesRef.current = changes; }, [changes]);
   const pathname = usePathname();
@@ -55,8 +56,9 @@ export function AdminEditBar() {
 
   useEffect(() => {
     if (!on) { applyEditable(false); return; }
-    applyEditable(true);
-    const late = window.setTimeout(() => applyEditable(true), 900); // catch late-revealed nodes
+    const check = () => setHasEditable(document.querySelectorAll("[data-edit]").length > 0);
+    applyEditable(true); check();
+    const late = window.setTimeout(() => { applyEditable(true); check(); }, 900); // catch late-revealed nodes
     return () => window.clearTimeout(late);
   }, [on, pathname, applyEditable]);
 
@@ -134,11 +136,13 @@ export function AdminEditBar() {
           <Pencil size={12} /> Živá editace
         </span>
         <span className="px-1 text-[12px] font-semibold text-ink-muted">
-          {changeCount === 0 ? "Klikněte do textu a pište" : `Změn: ${changeCount}`}
+          {!hasEditable ? "Obsah této stránky upravíte v Editoru stránky →" : changeCount === 0 ? "Klikněte do textu a pište" : `Změn: ${changeCount}`}
         </span>
-        <button onClick={save} disabled={changeCount === 0 || saving} className="inline-flex items-center gap-1.5 bg-red px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-red-dark disabled:opacity-50">
-          {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />} Uložit
-        </button>
+        {hasEditable && (
+          <button onClick={save} disabled={changeCount === 0 || saving} className="inline-flex items-center gap-1.5 bg-red px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-red-dark disabled:opacity-50">
+            {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />} Uložit
+          </button>
+        )}
         {isCmsBlockPage && (
           <Link href={editorHref} className="inline-flex items-center gap-1.5 border border-line-strong px-3 py-1.5 text-[11px] font-semibold text-ink-muted transition-colors hover:border-red hover:text-ink">
             <FileText size={13} /> Editor stránky

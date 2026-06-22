@@ -55,6 +55,11 @@ export const primaryNav: NavLink[] = [
   { label: "Kontakt", href: "/viapower-pobocka-cechy-kontakt/" },
 ];
 
+/** Top-level menu items that have a dropdown — usable as a parent ("rodina") for CMS pages. */
+export const navGroups: { key: string; label: string }[] = primaryNav
+  .filter((n) => n.children?.length)
+  .map((n) => ({ key: n.href, label: n.label }));
+
 export const footerNav: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: "Služby",

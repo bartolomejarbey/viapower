@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { Hero } from "@/components/home/hero";
 import { LogosMarquee } from "@/components/home/logos-marquee";
 import { Stats } from "@/components/home/stats";
@@ -14,12 +13,7 @@ import { getPackagesPublic, getServicesPublic, getSettings } from "@/lib/cms";
 import { getCompany } from "@/lib/company";
 import { getCalcConfig } from "@/lib/calc.server";
 
-export const metadata: Metadata = {
-  title: "Viapower — Fotovoltaika nové generace. Dotace až 160 000 Kč.",
-  description:
-    "Nejsme jen montáž FVE — jsme komplexní partner v energetice. Fotovoltaika, baterie, tepelná čerpadla a elektromobilita pro rodinné domy i firmy. 15+ let zkušeností, garantovaná dotace.",
-  alternates: { canonical: "/" },
-};
+// SEO title/description come from Nastavení → Web & SEO (root generateMetadata reads seo.*).
 
 export default async function HomePage() {
   const [packages, services, t, company, cfg] = await Promise.all([getPackagesPublic(), getServicesPublic(), getSettings(), getCompany(), getCalcConfig()]);
