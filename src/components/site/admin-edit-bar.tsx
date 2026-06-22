@@ -56,7 +56,7 @@ export function AdminEditBar() {
 
   useEffect(() => {
     if (!on) { applyEditable(false); return; }
-    const check = () => setHasEditable(document.querySelectorAll("[data-edit]").length > 0);
+    const check = () => setHasEditable(((document.querySelector("main")?.querySelectorAll("[data-edit], [data-edit-img]").length) ?? 0) > 0);
     applyEditable(true); check();
     const late = window.setTimeout(() => { applyEditable(true); check(); }, 900); // catch late-revealed nodes
     return () => window.clearTimeout(late);

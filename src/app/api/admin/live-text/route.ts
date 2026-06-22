@@ -17,9 +17,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "invalid_json" }, { status: 400 });
   }
 
+  // Live edit handles on-page TEXT/IMAGE only. Never let it touch financial/SEO/marketing
+  // settings (calculator constants, SEO, tag IDs) even from a crafted authenticated request.
+  const BLOCKED = ["calc.", "seo.", "mkt.", "marketing.", "verify.", "app.", "company."];
   const changes = body.changes ?? {};
   const entries = Object.entries(changes).filter(
-    ([k, v]) => typeof k === "string" && k.length < 120 && typeof v === "string" && v.length < 10000,
+    ([k, v]) =>
+      typeof k === "string" && k.length < 120 && typeof v === "string" && v.length < 10000 &&
+      !BLOCKED.some((p) => k.startsWith(p)),
   );
   if (!entries.length) return NextResponse.json({ ok: false, error: "no_changes" }, { status: 422 });
 

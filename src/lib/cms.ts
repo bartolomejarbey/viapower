@@ -24,6 +24,12 @@ export async function getCmsPage(slug: string) {
   return db.page.findFirst({ where: { slug, published: true }, include: { blocks: { orderBy: { order: "asc" } } } });
 }
 
+/** True if a CMS page claims this slug but is unpublished — so we must NOT fall back to the migrated snapshot. */
+export async function isClaimedUnpublished(slug: string) {
+  const p = await db.page.findUnique({ where: { slug }, select: { published: true } });
+  return p ? !p.published : false;
+}
+
 export async function getCmsPageById(id: string) {
   return db.page.findUnique({ where: { id }, include: { blocks: { orderBy: { order: "asc" } } } });
 }

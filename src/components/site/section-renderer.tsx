@@ -410,7 +410,7 @@ function Block({ block, company, t }: { block: AnyBlock; company: Company; t?: R
     /* ── CTA ──────────────────────────────────────────────── */
     case "cta":
       return (
-        <section className={cn("relative overflow-hidden border-t border-line px-5 md:px-9", padClass(layout), bgClass(s(d.bg, "surface") as BlockBg))}>
+        <section className={cn("relative overflow-hidden border-t border-line px-5 md:px-9", padClass(layout, "py-24"), bgClass(s(d.bg, "surface") as BlockBg))}>
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_75%_40%,rgba(192,15,10,0.16),transparent_55%)] [animation:vp-breathe_11s_ease-in-out_infinite]" />
           <Reveal className="relative mx-auto max-w-[1100px] text-center">
             <h2 className="text-[clamp(2.2rem,4.4vw,3.5rem)] font-bold leading-tight text-ink">{s(d.title)}</h2>

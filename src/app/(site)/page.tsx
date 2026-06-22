@@ -15,6 +15,16 @@ import { getCalcConfig } from "@/lib/calc.server";
 
 // SEO title/description come from Nastavení → Web & SEO (root generateMetadata reads seo.*).
 
+/** Package specs are untrusted JSON text — never let a malformed value crash the homepage. */
+function safeSpecs(s: string): [string, string][] {
+  try {
+    const v = JSON.parse(s);
+    return Array.isArray(v) ? (v as [string, string][]) : [];
+  } catch {
+    return [];
+  }
+}
+
 export default async function HomePage() {
   const [packages, services, t, company, cfg] = await Promise.all([getPackagesPublic(), getServicesPublic(), getSettings(), getCompany(), getCalcConfig()]);
 
@@ -31,7 +41,7 @@ export default async function HomePage() {
           power: p.powerKwp,
           featured: p.featured,
           href: p.href,
-          specs: (JSON.parse(p.specs) as [string, string][]) ?? [],
+          specs: safeSpecs(p.specs),
           battery: p.battery,
           panels: p.panels,
           priceFrom: p.priceFrom,

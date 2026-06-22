@@ -22,7 +22,7 @@ import { LeadForm } from "@/components/site/lead-form";
 import { Calculator } from "@/components/site/calculator";
 import { getCalcConfig } from "@/lib/calc.server";
 import { Reveal } from "@/components/ui/motion";
-import { getCmsPage, getSettings, setting } from "@/lib/cms";
+import { getCmsPage, isClaimedUnpublished, getSettings, setting } from "@/lib/cms";
 import { getCompany, type Company } from "@/lib/company";
 import { SectionRenderer } from "@/components/site/section-renderer";
 
@@ -91,6 +91,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug:
   // CMS pages first — a published CMS page (created or taken over in the
   // visual editor) overrides the migrated snapshot for the same URL.
   const cms = await getCmsPage(slug.join("/"));
+  if (!cms && (await isClaimedUnpublished(slug.join("/")))) notFound();
   const page = cms ? null : getPageBySegments(slug);
   const [company, t] = await Promise.all([getCompany(), getSettings()]);
 
