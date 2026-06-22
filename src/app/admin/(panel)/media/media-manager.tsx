@@ -14,6 +14,9 @@ export function MediaManager({ initial }: { initial: Asset[] }) {
   const [uploading, setUploading] = useState(false);
   const [copied, setCopied] = useState("");
   const [error, setError] = useState("");
+  const [rowError, setRowError] = useState<Record<string, string>>({});
+  const setErr = (id: string, msg: string) => setRowError((m) => ({ ...m, [id]: msg }));
+  const clearErr = (id: string) => setRowError((m) => { const n = { ...m }; delete n[id]; return n; });
   const [, start] = useTransition();
 
   async function onFiles(files: FileList | null) {
@@ -64,7 +67,7 @@ export function MediaManager({ initial }: { initial: Asset[] }) {
                 <p className="truncate font-mono text-[11px] text-ink-muted" title={a.filename}>{a.filename}</p>
                 <input
                   defaultValue={a.alt}
-                  onBlur={(e) => { if (e.target.value !== a.alt) start(() => updateMediaAlt(a.id, e.target.value)); }}
+                  onBlur={(e) => { const v = e.target.value; if (v === a.alt) return; clearErr(a.id); start(async () => { try { await updateMediaAlt(a.id, v); } catch { setErr(a.id, "Uložení alt textu selhalo."); } }); }}
                   placeholder="Alt text (popis obrázku)"
                   aria-label={`Alt text pro ${a.filename}`}
                   className="mt-2 w-full border border-line-strong bg-base px-2 py-1.5 text-[12px] text-ink outline-none focus:border-red"
@@ -76,10 +79,11 @@ export function MediaManager({ initial }: { initial: Asset[] }) {
                   >
                     {copied === a.id ? <Check size={11} /> : <Copy size={11} />} URL
                   </button>
-                  <button onClick={() => confirm("Smazat?") && start(() => deleteMedia(a.id))} className="ml-auto text-ink-dim hover:text-red-bright" aria-label="Smazat">
+                  <button onClick={() => { if (!confirm("Smazat tento obrázek?")) return; clearErr(a.id); start(async () => { try { await deleteMedia(a.id); } catch { setErr(a.id, "Smazání selhalo."); } }); }} className="ml-auto text-ink-dim hover:text-red-bright" aria-label="Smazat">
                     <Trash2 size={13} />
                   </button>
                 </div>
+                {rowError[a.id] && <p className="mt-2 text-[11px] font-semibold text-red-bright">{rowError[a.id]}</p>}
               </div>
             </div>
           ))}

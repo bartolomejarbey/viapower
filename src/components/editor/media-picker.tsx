@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Upload, X, Loader2 } from "lucide-react";
 import { CropModal } from "@/components/editor/crop-modal";
+import { useModalKeys } from "@/lib/use-modal";
 
 type Asset = { id: string; url: string; filename: string };
 
@@ -25,6 +26,7 @@ export function MediaPicker({ onPick, onClose }: { onPick: (url: string) => void
     fetch("/api/admin/media/").then((r) => r.json()).then((d) => setAssets(d.assets ?? [])).catch(() => setAssets([]));
 
   useEffect(() => { load(); }, []);
+  useModalKeys(() => { if (crop) closeCrop(); else onClose(); }); // Esc: close crop first, else the picker
 
   async function uploadBlob(blob: Blob, name: string): Promise<boolean> {
     setUploading(true);

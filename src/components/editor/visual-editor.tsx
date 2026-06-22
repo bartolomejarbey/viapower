@@ -5,10 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { nanoid } from "nanoid";
 import {
-  DndContext, DragOverlay, KeyboardSensor, PointerSensor, pointerWithin, useDraggable, useDroppable, useSensor, useSensors,
+  DndContext, DragOverlay, PointerSensor, pointerWithin, useDraggable, useDroppable, useSensor, useSensors,
   type DragEndEvent, type DragStartEvent,
 } from "@dnd-kit/core";
-import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
   ArrowDown, ArrowLeft, ArrowUp, BarChart3, Building2, Check, Columns2, Copy, Eye, GripVertical, Heading, Images, ImagePlus,
@@ -80,10 +80,9 @@ export function VisualEditor({ page }: { page: InitialPage }) {
     return () => window.removeEventListener("beforeunload", handler);
   }, [dirty]);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  );
+  // Pointer-only drag. Keyboard reorder is via the ↑/↓ buttons (keyboard dnd was dead
+  // under pointerWithin collision AND hijacked Enter/Space on palette tiles).
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const selectedBlock = useMemo(() => blocks.find((b) => b.id === selected) ?? null, [blocks, selected]);
   const touch = () => setDirty(true);
 
@@ -259,6 +258,7 @@ function PaletteItem({ id, label, icon: Icon, onAdd }: { id: string; label: stri
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id });
   return (
     <button ref={setNodeRef} {...attributes} {...listeners} onClick={onAdd}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onAdd(); } }}
       className={cn("flex cursor-grab flex-col items-start gap-1.5 border border-line-strong bg-card px-3 py-2.5 text-left text-[11.5px] font-semibold text-ink-muted transition-colors hover:border-red hover:text-ink active:cursor-grabbing", isDragging && "opacity-40")}>
       <Icon size={15} /> {label}
     </button>

@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import Cropper, { type Area } from "react-easy-crop";
 import { Check, X, ZoomIn, Loader2 } from "lucide-react";
+import { useModalKeys } from "@/lib/use-modal";
 
 type Aspect = { label: string; value: number | undefined };
 const ASPECTS: Aspect[] = [
@@ -50,6 +51,7 @@ export function CropModal({ src, mime, onConfirm, onUseOriginal, onCancel }: {
   const [aspect, setAspect] = useState<number | undefined>(undefined);
   const [area, setArea] = useState<Area | null>(null);
   const [busy, setBusy] = useState(false);
+  useModalKeys(onCancel);
 
   const onComplete = useCallback((_: Area, px: Area) => setArea(px), []);
 

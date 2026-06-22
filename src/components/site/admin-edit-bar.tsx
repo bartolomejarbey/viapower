@@ -138,7 +138,7 @@ export function AdminEditBar() {
         <span className="px-1 text-[12px] font-semibold text-ink-muted">
           {!hasEditable ? "Obsah této stránky upravíte v Editoru stránky →" : changeCount === 0 ? "Klikněte do textu a pište" : `Změn: ${changeCount}`}
         </span>
-        {hasEditable && (
+        {(hasEditable || changeCount > 0) && (
           <button onClick={save} disabled={changeCount === 0 || saving} className="inline-flex items-center gap-1.5 bg-red px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-red-dark disabled:opacity-50">
             {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />} Uložit
           </button>

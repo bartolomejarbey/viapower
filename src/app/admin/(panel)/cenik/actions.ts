@@ -42,6 +42,6 @@ export async function deletePackage(id: string) {
 
 export async function reorderPackages(ids: string[]) {
   await assertSession();
-  await Promise.all(ids.map((id, i) => db.pricePackage.update({ where: { id }, data: { order: i } })));
+  await db.$transaction(ids.map((id, i) => db.pricePackage.update({ where: { id }, data: { order: i } })));
   revalidate();
 }

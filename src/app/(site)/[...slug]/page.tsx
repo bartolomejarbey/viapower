@@ -91,8 +91,10 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug:
   // CMS pages first — a published CMS page (created or taken over in the
   // visual editor) overrides the migrated snapshot for the same URL.
   const cms = await getCmsPage(slug.join("/"));
-  if (!cms && (await isClaimedUnpublished(slug.join("/")))) notFound();
   const page = cms ? null : getPageBySegments(slug);
+  // Only suppress when an unpublished CMS page claims a slug with NO migrated fallback
+  // (a genuine draft/hidden page) — never 404 a live migrated page mid-takeover.
+  if (!cms && !page && (await isClaimedUnpublished(slug.join("/")))) notFound();
   const [company, t] = await Promise.all([getCompany(), getSettings()]);
 
   if (cms) {
