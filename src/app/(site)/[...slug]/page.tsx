@@ -20,6 +20,7 @@ import { RichProse } from "@/components/site/rich-prose";
 import { CtaBand } from "@/components/site/cta-band";
 import { LeadForm } from "@/components/site/lead-form";
 import { Calculator } from "@/components/site/calculator";
+import { getCalcConfig } from "@/lib/calc.server";
 import { Reveal } from "@/components/ui/motion";
 import { getCmsPage, getSettings, setting } from "@/lib/cms";
 import { getCompany, type Company } from "@/lib/company";
@@ -256,6 +257,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug:
 
   // ── default: service / generic / legal / news / detail ───────
   const isCalculator = path === "/kalkulacka/";
+  const calcCfg = isCalculator ? await getCalcConfig() : undefined;
   // aside facts: drop extraction meta-noise and package specs already rendered as cards
   const asideFacts = (page.keyFacts ?? []).filter(
     (f) => !/banner|placeholder|widget|VIAPOWER (LOW|HIGH|ULTRA|MINI|MEDIUM)\s*:/i.test(f),
@@ -278,7 +280,7 @@ export default async function CatchAllPage({ params }: { params: Promise<{ slug:
         <div className="relative mx-auto max-w-[1400px]">
         {isCalculator && (
           <div className="mb-16">
-            <Calculator t={t} />
+            <Calculator t={t} cfg={calcCfg} />
           </div>
         )}
         {page.packages && page.packages.length > 0 && (

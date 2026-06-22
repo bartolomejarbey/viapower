@@ -10,8 +10,9 @@ import { EASE } from "@/components/ui/motion";
 import { ArrowSwap } from "@/components/ui/primitives";
 import { tx } from "@/components/site/t";
 import { formatCZK, formatNumber } from "@/lib/utils";
+import { computeCalc, DEFAULT_CONFIG, type CalcConfig } from "@/lib/calc";
 
-export function Hero({ t, company }: { t?: Record<string, string>; company: Company }) {
+export function Hero({ t, company, cfg = DEFAULT_CONFIG }: { t?: Record<string, string>; company: Company; cfg?: CalcConfig }) {
   const line1 = tx(t, "hero.line1", "Energie, kterou");
   const accent = tx(t, "hero.accent", "si vyrábíte");
   const line2 = tx(t, "hero.line2", "sami.");
@@ -148,7 +149,7 @@ export function Hero({ t, company }: { t?: Record<string, string>; company: Comp
           transition={{ duration: 1, delay: 0.5, ease: EASE }}
           className="relative hidden lg:block"
         >
-          <HeroCalc t={t} />
+          <HeroCalc t={t} cfg={cfg} />
         </motion.div>
       </div>
     </section>
@@ -170,22 +171,9 @@ function Metric({ k, label, value, accent }: { k: string; label: string; value: 
 }
 
 /* compact savings calculator — the hero's working instrument */
-const PRICE_PER_KWH = 6.5;
-const YIELD_PER_KWP = 1000;
-const SELF_CONSUMPTION = 0.7;
-const PACKAGES = [
-  { name: "Viapower Mini", kwp: 4.95, price: 219000 },
-  { name: "Viapower Medium", kwp: 9.9, price: 349000 },
-  { name: "Viapower Ultra", kwp: 16.5, price: 489000 },
-];
-
-function HeroCalc({ t }: { t?: Record<string, string> }) {
+function HeroCalc({ t, cfg }: { t?: Record<string, string>; cfg: CalcConfig }) {
   const [monthly, setMonthly] = useState(3500);
-
-  const annualConsumption = (monthly * 12) / PRICE_PER_KWH;
-  const pkg = PACKAGES.find((p) => p.kwp >= annualConsumption / YIELD_PER_KWP) ?? PACKAGES[PACKAGES.length - 1];
-  const annualSavings = Math.round(pkg.kwp * YIELD_PER_KWP * SELF_CONSUMPTION * PRICE_PER_KWH);
-  const subsidy = pkg.kwp <= 10 ? 160000 : 120000;
+  const { pkg, annualSavings, subsidy } = computeCalc(monthly, cfg);
 
   return (
     <div className="brackets border border-line-strong bg-card/95 p-7 shadow-[var(--shadow-glow)] backdrop-blur-sm">

@@ -3,19 +3,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Check, FileText, LayoutDashboard, Loader2, Paintbrush, Pencil, Settings, X } from "lucide-react";
+import { Check, FileText, LayoutDashboard, Loader2, Pencil, Settings, X } from "lucide-react";
 import { MediaPicker } from "@/components/editor/media-picker";
-import { cn } from "@/lib/utils";
 
 /**
- * Admin chrome on the live site: quick links + the Lovable-style LIVE EDIT
- * mode — click any [data-edit] text on the real page and type; click any
- * [data-edit-img] image to swap it from the media library. Changes save
- * into Settings via /api/admin/live-text and survive across deploys.
+ * Live on-site editor. It is NOT shown just because someone is logged in — it
+ * activates ONLY when an admin explicitly launches it (URL `?edit=1`, from the
+ * admin "Upravit web naživo" action). Desktop-only. Click any [data-edit] text
+ * to type, click any [data-edit-img] image to swap it. Saves into Settings.
  */
 export function AdminEditBar() {
   const [admin, setAdmin] = useState(false);
-  const [live, setLive] = useState(false);
+  const [editActive, setEditActive] = useState(false);
+  const [desktop, setDesktop] = useState(true);
   const [changes, setChanges] = useState<Record<string, string>>({});
   const [imgTarget, setImgTarget] = useState<{ key: string; el: HTMLElement } | null>(null);
   const [saving, setSaving] = useState(false);
@@ -23,161 +23,137 @@ export function AdminEditBar() {
   useEffect(() => { changesRef.current = changes; }, [changes]);
   const pathname = usePathname();
 
+  // admin check
   useEffect(() => {
-    fetch("/api/admin/me/")
-      .then((r) => r.json())
-      .then((d) => {
-        setAdmin(Boolean(d?.admin));
-        if (d?.admin && sessionStorage.getItem("vp-live") === "1") setLive(true);
-      })
-      .catch(() => {});
+    fetch("/api/admin/me/").then((r) => r.json()).then((d) => setAdmin(Boolean(d?.admin))).catch(() => {});
   }, []);
 
-  const applyEditable = useCallback((on: boolean) => {
+  // edit mode is triggered ONLY by ?edit=1 (an explicit admin launch) — never persisted
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setEditActive(new URLSearchParams(window.location.search).get("edit") === "1");
+  }, [pathname]);
+
+  // desktop guard — editor/live-edit is blocked on phones & small tablets
+  useEffect(() => {
+    const check = () => setDesktop(window.innerWidth >= 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  const on = admin && editActive && desktop;
+
+  const applyEditable = useCallback((enabled: boolean) => {
     document.querySelectorAll<HTMLElement>("[data-edit]").forEach((el) => {
-      if (on) {
-        el.setAttribute("contenteditable", "plaintext-only");
-        el.spellcheck = false;
-      } else {
-        el.removeAttribute("contenteditable");
-      }
+      if (enabled) { el.setAttribute("contenteditable", "plaintext-only"); el.spellcheck = false; }
+      else el.removeAttribute("contenteditable");
     });
-    document.body.classList.toggle("vp-live", on);
+    document.body.classList.toggle("vp-live", enabled);
   }, []);
 
-  // enable/disable editing surface (re-run after route changes; late pass for revealed nodes)
   useEffect(() => {
-    if (!admin) return;
-    applyEditable(live);
-    const late = live ? window.setTimeout(() => applyEditable(true), 900) : 0;
+    if (!on) { applyEditable(false); return; }
+    applyEditable(true);
+    const late = window.setTimeout(() => applyEditable(true), 900); // catch late-revealed nodes
     return () => window.clearTimeout(late);
-  }, [admin, live, pathname, applyEditable]);
+  }, [on, pathname, applyEditable]);
 
-  // capture edits + intercept clicks while live
+  // capture text edits + intercept image clicks while editing
   useEffect(() => {
-    if (!admin || !live) return;
-
+    if (!on) return;
     const onFocusOut = (e: FocusEvent) => {
       const el = (e.target as HTMLElement)?.closest?.("[data-edit]") as HTMLElement | null;
-      if (!el) return;
-      const key = el.getAttribute("data-edit");
-      if (!key) return;
-      setChanges((c) => ({ ...c, [key]: el.innerText.replace(/\n+/g, " ").trim() }));
+      const key = el?.getAttribute("data-edit");
+      if (el && key) setChanges((c) => ({ ...c, [key]: el.innerText.replace(/\n+/g, " ").trim() }));
     };
-
     const onClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const img = target.closest?.("[data-edit-img]") as HTMLElement | null;
       if (img) {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault(); e.stopPropagation();
         const key = img.getAttribute("data-edit-img");
         if (key) setImgTarget({ key, el: img });
         return;
       }
-      // editing inside a link must not navigate
-      if (target.closest?.("[data-edit]") && target.closest?.("a")) {
-        e.preventDefault();
-      }
+      if (target.closest?.("[data-edit]") && target.closest?.("a")) e.preventDefault();
     };
-
     document.addEventListener("focusout", onFocusOut);
     document.addEventListener("click", onClick, true);
     return () => {
       document.removeEventListener("focusout", onFocusOut);
       document.removeEventListener("click", onClick, true);
     };
-  }, [admin, live]);
+  }, [on]);
 
-  function toggleLive() {
-    const next = !live;
-    if (!next && Object.keys(changesRef.current).length > 0 && !confirm("Máte neuložené změny. Opravdu ukončit bez uložení?")) {
-      return;
-    }
-    sessionStorage.setItem("vp-live", next ? "1" : "0");
-    setChanges({});
-    setLive(next);
-    if (!next) applyEditable(false);
+  /** Merge the currently-focused field before reading changes (avoids losing the last edit). */
+  function flushActive(): Record<string, string> {
+    const el = (document.activeElement as HTMLElement)?.closest?.("[data-edit]") as HTMLElement | null;
+    const key = el?.getAttribute("data-edit");
+    const merged = { ...changesRef.current };
+    if (el && key) merged[key] = el.innerText.replace(/\n+/g, " ").trim();
+    return merged;
   }
 
   async function save() {
+    const payload = flushActive();
     setSaving(true);
     try {
       const res = await fetch("/api/admin/live-text/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ changes: changesRef.current, path: pathname }),
+        body: JSON.stringify({ changes: payload, path: pathname }),
       });
-      if (res.ok) {
-        sessionStorage.setItem("vp-live", "1");
-        location.reload();
-        return;
-      }
+      if (res.ok) { window.location.reload(); return; } // keeps ?edit=1
       alert(res.status === 401 ? "Přihlášení vypršelo. Přihlaste se znovu." : "Uložení selhalo. Zkuste to znovu.");
     } catch {
-      alert("Uložení selhalo — zkontrolujte připojení a zkuste to znovu.");
+      alert("Uložení selhalo — zkontrolujte připojení.");
     } finally {
       setSaving(false);
     }
   }
 
-  if (!admin) return null;
+  function exit() {
+    if (Object.keys(changesRef.current).length > 0 && !confirm("Máte neuložené změny. Opravdu ukončit?")) return;
+    window.location.href = pathname; // drop ?edit=1
+  }
+
+  if (!on) return null;
 
   const changeCount = Object.keys(changes).length;
-  const editHref = pathname === "/" ? "/admin/nastaveni/" : `/admin/editor/by-path/?path=${encodeURIComponent(pathname)}`;
+  const isCmsBlockPage = pathname !== "/";
+  const editorHref = pathname === "/" ? "/admin/nastaveni/" : `/admin/editor/by-path/?path=${encodeURIComponent(pathname)}`;
 
   return (
     <>
-      <div className="fixed bottom-4 left-1/2 z-[70] flex -translate-x-1/2 items-center gap-1 border border-red/50 bg-elevated/95 px-2 py-2 shadow-[var(--shadow-glow)] backdrop-blur-md">
-        <span className="flex items-center gap-2 px-2.5 text-[10.5px] font-bold uppercase tracking-[0.12em] text-red-bright">
-          <Pencil size={12} /> Editace
+      <div className="fixed bottom-4 left-1/2 z-[70] flex -translate-x-1/2 flex-wrap items-center gap-1.5 border border-red/50 bg-elevated/95 px-2.5 py-2 shadow-[var(--shadow-glow)] backdrop-blur-md">
+        <span className="flex items-center gap-2 px-1.5 text-[10.5px] font-bold uppercase tracking-[0.12em] text-red-bright">
+          <Pencil size={12} /> Živá editace
         </span>
-        <button
-          onClick={toggleLive}
-          className={cn(
-            "flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide transition-colors",
-            live ? "bg-red text-white" : "bg-red/15 text-red-bright hover:bg-red hover:text-white",
-          )}
-        >
-          <Pencil size={13} /> {live ? "Živá editace: ZAP" : "Živá editace"}
+        <span className="px-1 text-[12px] font-semibold text-ink-muted">
+          {changeCount === 0 ? "Klikněte do textu a pište" : `Změn: ${changeCount}`}
+        </span>
+        <button onClick={save} disabled={changeCount === 0 || saving} className="inline-flex items-center gap-1.5 bg-red px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-red-dark disabled:opacity-50">
+          {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />} Uložit
         </button>
-        <a href={editHref} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-ink-muted transition-colors hover:bg-red-soft hover:text-ink">
-          <Paintbrush size={13} /> Editor stránky
-        </a>
+        {isCmsBlockPage && (
+          <Link href={editorHref} className="inline-flex items-center gap-1.5 border border-line-strong px-3 py-1.5 text-[11px] font-semibold text-ink-muted transition-colors hover:border-red hover:text-ink">
+            <FileText size={13} /> Editor stránky
+          </Link>
+        )}
         <BarLink href="/admin/" icon={LayoutDashboard} label="Admin" />
-        <BarLink href="/admin/stranky/" icon={FileText} label="Stránky" />
         <BarLink href="/admin/nastaveni/" icon={Settings} label="Texty" />
+        <button onClick={exit} className="inline-flex items-center gap-1.5 border border-line-strong px-3 py-1.5 text-[11px] font-semibold text-ink-muted transition-colors hover:border-white hover:text-ink">
+          <X size={13} /> Ukončit
+        </button>
       </div>
-
-      {live && (
-        <div className="fixed bottom-4 right-4 z-[71] flex items-center gap-2 border border-line-strong bg-surface/95 px-3 py-2.5 shadow-xl backdrop-blur-md">
-          <span className="text-[12px] font-semibold text-ink-muted">
-            {changeCount === 0 ? "Klikněte do textu a pište" : `Změn: ${changeCount}`}
-          </span>
-          <button
-            onClick={save}
-            disabled={changeCount === 0 || saving}
-            className="inline-flex items-center gap-1.5 bg-red px-3.5 py-2 text-[11px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-red-dark disabled:opacity-50"
-          >
-            {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />} Uložit
-          </button>
-          <button
-            onClick={() => { if (changeCount === 0 || confirm("Zahodit neuložené změny?")) location.reload(); }}
-            className="inline-flex items-center gap-1.5 border border-line-strong px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-ink-muted transition-colors hover:border-white hover:text-ink"
-          >
-            <X size={13} /> Zahodit
-          </button>
-        </div>
-      )}
 
       {imgTarget && (
         <MediaPicker
           onPick={(url) => {
             setChanges((c) => ({ ...c, [imgTarget.key]: url }));
-            // optimistic preview: swap the visible image in place
             const el = imgTarget.el;
             const img = el.querySelector("img");
-            // next/image emits srcset+sizes; clear them or setting .src alone won't repaint.
             if (img) { img.removeAttribute("srcset"); img.removeAttribute("sizes"); img.src = url; }
             const bg = el.querySelector<HTMLElement>('[style*="background-image"]') ?? el;
             if (bg.style.backgroundImage) bg.style.backgroundImage = `url('${url}')`;
@@ -192,7 +168,7 @@ export function AdminEditBar() {
 
 function BarLink({ href, icon: Icon, label }: { href: string; icon: React.ComponentType<{ size?: number }>; label: string }) {
   return (
-    <Link href={href} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold text-ink-muted transition-colors hover:bg-red-soft hover:text-ink">
+    <Link href={href} className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold text-ink-muted transition-colors hover:bg-red-soft hover:text-ink">
       <Icon size={13} /> {label}
     </Link>
   );

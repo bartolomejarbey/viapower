@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileText, LayoutGrid, Tag, Image as ImageIcon, Inbox, FileSpreadsheet, Settings, ExternalLink, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, FileText, LayoutGrid, Tag, Image as ImageIcon, Inbox, FileSpreadsheet, Settings, ExternalLink, LogOut, Menu, X, Pencil } from "lucide-react";
 import { logoPath } from "@/config/site";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +46,9 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 function Footer({ email }: { email: string }) {
   return (
     <div className="border-t border-line px-3 py-3">
+      <a href="/?edit=1" className="mb-0.5 hidden items-center gap-3 px-3 py-2.5 text-[13px] font-semibold text-red-bright transition-colors hover:text-ink lg:flex">
+        <Pencil size={16} /> Upravit web naživo
+      </a>
       <a href="/" target="_blank" rel="noopener noreferrer" className="mb-0.5 flex items-center gap-3 px-3 py-2.5 text-[13px] text-ink-muted transition-colors hover:text-ink">
         <ExternalLink size={16} /> Zobrazit web
       </a>

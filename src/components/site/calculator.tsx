@@ -4,33 +4,13 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Sun, BatteryCharging, PiggyBank, TrendingUp } from "lucide-react";
 import { formatCZK, formatNumber } from "@/lib/utils";
+import { computeCalc, DEFAULT_CONFIG, type CalcConfig } from "@/lib/calc";
 
-const PRICE_PER_KWH = 6.5; // Kč
-const YIELD_PER_KWP = 1000; // kWh / kWp / rok (ČR)
-const SELF_CONSUMPTION = 0.7;
-
-type Pkg = { name: string; kwp: number; battery: number; price: number };
-const PACKAGES: Pkg[] = [
-  { name: "Viapower Mini", kwp: 4.95, battery: 5, price: 219000 },
-  { name: "Viapower Medium", kwp: 9.9, battery: 10, price: 349000 },
-  { name: "Viapower Ultra", kwp: 16.5, battery: 15, price: 489000 },
-];
-
-export function Calculator({ t }: { t?: Record<string, string> }) {
+export function Calculator({ t, cfg = DEFAULT_CONFIG }: { t?: Record<string, string>; cfg?: CalcConfig }) {
   const c = (k: string, f: string) => t?.[k] ?? f;
   const [monthly, setMonthly] = useState(3500);
 
-  const result = useMemo(() => {
-    const annualConsumption = (monthly * 12) / PRICE_PER_KWH;
-    const neededKwp = annualConsumption / YIELD_PER_KWP;
-    const pkg = PACKAGES.find((p) => p.kwp >= neededKwp) ?? PACKAGES[PACKAGES.length - 1];
-    const production = pkg.kwp * YIELD_PER_KWP;
-    const annualSavings = Math.round(production * SELF_CONSUMPTION * PRICE_PER_KWH);
-    const subsidy = pkg.kwp <= 10 ? 160000 : 120000;
-    const netPrice = pkg.price - subsidy;
-    const payback = annualSavings > 0 ? netPrice / annualSavings : 0;
-    return { annualConsumption, pkg, production, annualSavings, subsidy, netPrice, payback };
-  }, [monthly]);
+  const result = useMemo(() => computeCalc(monthly, cfg), [monthly, cfg]);
 
   return (
     <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">

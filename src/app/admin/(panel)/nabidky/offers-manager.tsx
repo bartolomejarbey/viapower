@@ -1,19 +1,16 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Sparkles, Loader2, Eye, Download, FileSpreadsheet, Trash2, Pencil } from "lucide-react";
-import { btnPrimary, inputCls, labelCls } from "@/components/admin/ui";
+import { Sparkles, Eye, Download, FileSpreadsheet, Trash2, Pencil, PenLine } from "lucide-react";
+import { createManualOffer } from "./actions";
 
 type OfferRow = { id: string; number: string; type: string; subject: string; investor: { name: string }; createdAt: string };
 
 export function OffersManager({ initial }: { initial: OfferRow[] }) {
   const router = useRouter();
   const [, start] = useTransition();
-  const [brief, setBrief] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   async function remove(id: string) {
     if (!confirm("Opravdu smazat tuto nabídku?")) return;
@@ -26,59 +23,33 @@ export function OffersManager({ initial }: { initial: OfferRow[] }) {
     }
   }
 
-  async function generate() {
-    if (!brief.trim()) return;
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch("/api/nabidky/generate/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ brief }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        setBrief("");
-        start(() => router.refresh());
-      } else {
-        setError(data.error || "Generování selhalo.");
-      }
-    } catch (e) {
-      setError(String(e));
-    } finally {
-      setLoading(false);
-    }
-  }
-
   return (
     <div>
-      <Link href="/admin/nabidky/chat/" className="group mb-4 flex items-center justify-between gap-4 border border-red bg-red-soft p-5 transition-colors hover:bg-red/15">
-        <span className="flex items-center gap-3.5">
-          <span className="grid h-11 w-11 shrink-0 place-items-center bg-red text-white"><Sparkles size={20} /></span>
-          <span>
-            <span className="block text-[15px] font-bold text-ink">Vytvořit nabídku přes chat</span>
-            <span className="block text-[12.5px] text-ink-muted">Asistent se doptá na vše potřebné a upozorní, co chybí. Nejrychlejší cesta k nabídce.</span>
+      {/* Two ways to create a new offer: smart chat (recommended) or fully manual. */}
+      <div className="mb-8 grid gap-3 sm:grid-cols-2">
+        <Link href="/admin/nabidky/chat/" className="group flex items-center justify-between gap-4 border border-red bg-red-soft p-5 transition-colors hover:bg-red/15">
+          <span className="flex items-center gap-3.5">
+            <span className="grid h-11 w-11 shrink-0 place-items-center bg-red text-white"><Sparkles size={20} /></span>
+            <span>
+              <span className="block text-[15px] font-bold text-ink">Vytvořit přes chat</span>
+              <span className="block text-[12.5px] text-ink-muted">Asistent se doptá na vše potřebné a sestaví nabídku. Nejrychlejší cesta.</span>
+            </span>
           </span>
-        </span>
-        <Pencil size={16} className="text-red-bright transition-transform group-hover:translate-x-1" />
-      </Link>
+          <Pencil size={16} className="text-red-bright transition-transform group-hover:translate-x-1" />
+        </Link>
 
-      <div className="mb-8 border border-line-strong bg-card p-5">
-        <label className={labelCls}>Nebo zadání jedním textem (popis zakázky, výkon, lokalita, ceny…)</label>
-        <textarea
-          value={brief}
-          onChange={(e) => setBrief(e.target.value)}
-          rows={4}
-          className={inputCls}
-          placeholder="Např. FVE 9,9 kWp s baterií 10 kWh pro pana Nováka, Čakovičky. 18 panelů AIKO, střídač GoodWe. Cena cca 320 000 Kč bez DPH."
-        />
-        <div className="mt-3 flex items-center gap-3">
-          <button onClick={generate} disabled={loading} className={btnPrimary}>
-            {loading ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />} Vygenerovat nabídku
+        <form action={createManualOffer}>
+          <button type="submit" className="group flex w-full items-center justify-between gap-4 border border-line-strong bg-card p-5 text-left transition-colors hover:border-red">
+            <span className="flex items-center gap-3.5">
+              <span className="grid h-11 w-11 shrink-0 place-items-center border border-line-strong text-ink-muted"><PenLine size={20} /></span>
+              <span>
+                <span className="block text-[15px] font-bold text-ink">Vytvořit ručně</span>
+                <span className="block text-[12.5px] text-ink-muted">Prázdná nabídka — vyplníte všechna pole sami v editoru.</span>
+              </span>
+            </span>
+            <Pencil size={16} className="text-ink-dim transition-transform group-hover:translate-x-1" />
           </button>
-          <span className="font-mono text-[11px] text-ink-dim">Vytvoří strukturovanou nabídku a uloží ji jako PDF k náhledu.</span>
-        </div>
-        {error && <p className="mt-3 font-mono text-[12px] text-red-bright">{error}</p>}
+        </form>
       </div>
 
       <div className="flex flex-col gap-3">

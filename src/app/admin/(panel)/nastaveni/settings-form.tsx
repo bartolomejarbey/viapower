@@ -68,6 +68,15 @@ const FIELDS: FieldDef[] = [
   { key: "herocalc.cta", label: "Hero kalkulačka — tlačítko", type: "input", group: "Kalkulačka" },
   { key: "herocalc.detail", label: "Hero kalkulačka — odkaz na podrobnou", type: "input", group: "Kalkulačka" },
 
+  // Calculator constants/formulas — the client can tune the maths here.
+  { key: "calc.priceKwh", label: "Cena elektřiny (Kč/kWh)", type: "input", group: "Kalkulačka — výpočty", help: "Výchozí 6,5. Použije se pro odhad spotřeby i úspory." },
+  { key: "calc.yieldKwp", label: "Roční výnos (kWh na 1 kWp)", type: "input", group: "Kalkulačka — výpočty", help: "Výchozí 1000 (ČR)." },
+  { key: "calc.selfConsumption", label: "Podíl vlastní spotřeby (0–1)", type: "input", group: "Kalkulačka — výpočty", help: "Výchozí 0,7 (s baterií). Kolik výroby zákazník reálně spotřebuje." },
+  { key: "calc.feedIn", label: "Výkupní cena přetoků (Kč/kWh)", type: "input", group: "Kalkulačka — výpočty", help: "Výchozí 2. Cena za přebytky prodané do sítě." },
+  { key: "calc.subsidyUnder", label: "Dotace do prahu (Kč)", type: "input", group: "Kalkulačka — výpočty", help: "Výchozí 160000." },
+  { key: "calc.subsidyOver", label: "Dotace nad práh (Kč)", type: "input", group: "Kalkulačka — výpočty", help: "Výchozí 120000." },
+  { key: "calc.subsidyThreshold", label: "Práh výkonu pro dotaci (kWp)", type: "input", group: "Kalkulačka — výpočty", help: "Výchozí 10. Do tohoto výkonu platí vyšší dotace." },
+
   // SEO — site-wide title/description (with current strings as fallback).
   { key: "seo.title", label: "Titulek webu (SEO)", type: "input", group: "SEO" },
   { key: "seo.description", label: "Popis webu (SEO)", type: "textarea", group: "SEO" },

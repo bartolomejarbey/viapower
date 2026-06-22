@@ -12,6 +12,7 @@ import { Faq } from "@/components/home/faq";
 import { Contact } from "@/components/home/contact";
 import { getPackagesPublic, getServicesPublic, getSettings } from "@/lib/cms";
 import { getCompany } from "@/lib/company";
+import { getCalcConfig } from "@/lib/calc.server";
 
 export const metadata: Metadata = {
   title: "Viapower — Fotovoltaika nové generace. Dotace až 160 000 Kč.",
@@ -21,11 +22,11 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [packages, services, t, company] = await Promise.all([getPackagesPublic(), getServicesPublic(), getSettings(), getCompany()]);
+  const [packages, services, t, company, cfg] = await Promise.all([getPackagesPublic(), getServicesPublic(), getSettings(), getCompany(), getCalcConfig()]);
 
   return (
     <>
-      <Hero t={t} company={company} />
+      <Hero t={t} company={company} cfg={cfg} />
       <LogosMarquee t={t} />
       <Stats t={t} company={company} />
       <Why t={t} />
