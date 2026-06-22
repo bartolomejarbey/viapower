@@ -18,12 +18,13 @@ const NAV = [
   { href: "/admin/nastaveni/", label: "Nastavení", icon: Settings },
 ];
 
-function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+function NavLinks({ onNavigate, unreadLeads = 0 }: { onNavigate?: () => void; unreadLeads?: number }) {
   const pathname = usePathname();
   return (
     <>
       {NAV.map((item) => {
         const active = item.exact ? pathname === item.href || pathname === "/admin" : pathname.startsWith(item.href);
+        const badge = item.href === "/admin/poptavky/" && unreadLeads > 0 ? unreadLeads : 0;
         return (
           <Link
             key={item.href}
@@ -36,6 +37,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
           >
             <item.icon size={17} />
             {item.label}
+            {badge > 0 && <span className="ml-auto grid h-5 min-w-5 place-items-center bg-red px-1 text-[10px] font-bold text-white">{badge}</span>}
           </Link>
         );
       })}
@@ -62,7 +64,7 @@ function Footer({ email }: { email: string }) {
   );
 }
 
-export function AdminSidebar({ email }: { email: string }) {
+export function AdminSidebar({ email, unreadLeads = 0 }: { email: string; unreadLeads?: number }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   // close the mobile drawer on navigation
@@ -94,7 +96,7 @@ export function AdminSidebar({ email }: { email: string }) {
               </span>
               <button onClick={() => setOpen(false)} aria-label="Zavřít menu" className="grid h-9 w-9 place-items-center text-ink"><X size={20} /></button>
             </div>
-            <nav className="flex-1 overflow-y-auto px-3 py-4"><NavLinks onNavigate={() => setOpen(false)} /></nav>
+            <nav className="flex-1 overflow-y-auto px-3 py-4"><NavLinks onNavigate={() => setOpen(false)} unreadLeads={unreadLeads} /></nav>
             <Footer email={email} />
           </aside>
         </div>
@@ -106,7 +108,7 @@ export function AdminSidebar({ email }: { email: string }) {
           <img src={logoPath} alt="Viapower" className="h-6 [filter:brightness(0)_invert(1)]" />
           <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-red-bright">CMS</span>
         </div>
-        <nav className="flex-1 overflow-y-auto px-3 py-4"><NavLinks /></nav>
+        <nav className="flex-1 overflow-y-auto px-3 py-4"><NavLinks unreadLeads={unreadLeads} /></nav>
         <Footer email={email} />
       </aside>
     </>

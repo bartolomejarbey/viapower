@@ -99,7 +99,10 @@ model Lead {
   email     String
   message   String   @default("")
   source    String   @default("web")
+  read      Boolean  @default(false)
   createdAt DateTime @default(now())
+
+  @@index([read])
 }
 
 /// Lightweight version history (snapshots taken on save).

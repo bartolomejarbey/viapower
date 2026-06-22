@@ -96,12 +96,16 @@ function PackageForm({
   const [error, setError] = useState("");
   const [d, setD] = useState(initial);
   const [specsText, setSpecsText] = useState(specsToText(initial.specs));
+  const [specsDirty, setSpecsDirty] = useState(false);
+  // Preserve the original specs JSON when the textarea wasn't touched — otherwise editing
+  // just the price would wipe specs (specsToText returns "" for non-array/corrupt stored JSON).
+  const origSpecs = (() => { try { const v = JSON.parse(initial.specs); return Array.isArray(v) ? JSON.stringify(v) : "[]"; } catch { return "[]"; } })();
 
   function submit() {
     setError("");
     start(async () => {
       try {
-        await onSubmit({ ...d, specs: textToSpecs(specsText) });
+        await onSubmit({ ...d, specs: specsDirty ? textToSpecs(specsText) : origSpecs });
         setSaved(true);
         setTimeout(() => setSaved(false), 1500);
         onDone?.();
@@ -125,7 +129,7 @@ function PackageForm({
       </div>
       <div className="mt-3">
         <span className={labelCls}>Parametry (jeden na řádek, „Popisek: Hodnota“)</span>
-        <textarea value={specsText} onChange={(e) => setSpecsText(e.target.value)} rows={4} className={`${inputCls} font-mono text-[12px]`} placeholder={"Výkon FVE: 9,9 kWp\nBaterie: 10 kWh"} />
+        <textarea value={specsText} onChange={(e) => { setSpecsText(e.target.value); setSpecsDirty(true); }} rows={4} className={`${inputCls} font-mono text-[12px]`} placeholder={"Výkon FVE: 9,9 kWp\nBaterie: 10 kWh"} />
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-3">
         <button onClick={submit} disabled={pending} className={btnPrimary}>

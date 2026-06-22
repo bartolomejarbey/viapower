@@ -1,26 +1,37 @@
-import { Mail, Phone } from "lucide-react";
+import { Mail, Phone, CheckCheck } from "lucide-react";
 import { db } from "@/lib/db";
-import { AdminHeader } from "@/components/admin/ui";
+import { AdminHeader, btnGhost } from "@/components/admin/ui";
 import { formatDateCZ } from "@/lib/utils";
 import { DeleteLeadButton } from "./lead-actions";
+import { markAllLeadsRead } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function LeadsAdminPage() {
   const leads = await db.lead.findMany({ orderBy: { createdAt: "desc" } });
+  const unread = leads.filter((l) => !l.read).length;
 
   return (
     <div className="p-8">
-      <AdminHeader title="Poptávky" desc="Kontakty odeslané formuláři na webu." />
+      <AdminHeader
+        title="Poptávky"
+        desc="Kontakty odeslané formuláři na webu."
+        action={unread > 0 ? (
+          <form action={markAllLeadsRead}>
+            <button type="submit" className={btnGhost}><CheckCheck size={15} /> Označit vše jako přečtené ({unread})</button>
+          </form>
+        ) : undefined}
+      />
       {leads.length === 0 ? (
         <p className="text-ink-muted">Zatím žádné poptávky.</p>
       ) : (
         <div className="flex flex-col gap-3">
           {leads.map((l) => (
-            <div key={l.id} className="border border-line-strong bg-card p-5">
+            <div key={l.id} className={`border bg-card p-5 ${l.read ? "border-line-strong" : "border-l-2 border-l-red border-line-strong"}`}>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-3">
+                    {!l.read && <span className="bg-red px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">Nové</span>}
                     <span className="text-[16px] font-bold text-ink">{l.name}</span>
                     <span className="border border-line px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide text-ink-dim">{l.source}</span>
                   </div>
