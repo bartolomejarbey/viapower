@@ -67,10 +67,10 @@ export function MediaPicker({ onPick, onClose }: { onPick: (url: string) => void
           <span className="text-[13px] font-bold uppercase tracking-[0.12em] text-ink">Vybrat obrázek</span>
           <div className="flex items-center gap-2">
             <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" hidden onChange={(e) => { onFiles(e.target.files); e.target.value = ""; }} />
-            <button onClick={() => inputRef.current?.click()} disabled={uploading} className="inline-flex items-center gap-2 bg-red px-3.5 py-2 text-[11.5px] font-bold uppercase tracking-[0.08em] text-white transition-colors hover:bg-red-dark disabled:opacity-60">
+            <button type="button" onClick={() => inputRef.current?.click()} disabled={uploading} className="inline-flex items-center gap-2 bg-red px-3.5 py-2 text-[11.5px] font-bold uppercase tracking-[0.08em] text-white transition-colors hover:bg-red-dark disabled:opacity-60">
               {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />} Nahrát
             </button>
-            <button onClick={onClose} className="grid h-9 w-9 place-items-center text-ink-muted hover:text-ink" aria-label="Zavřít"><X size={18} /></button>
+            <button type="button" onClick={onClose} className="grid h-9 w-9 place-items-center text-ink-muted hover:text-ink" aria-label="Zavřít"><X size={18} /></button>
           </div>
         </div>
         {error && <p className="border-b border-red/40 bg-red-soft px-5 py-2.5 text-[12.5px] font-semibold text-red-bright">{error}</p>}
@@ -82,7 +82,7 @@ export function MediaPicker({ onPick, onClose }: { onPick: (url: string) => void
           ) : (
             <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
               {assets.map((a) => (
-                <button key={a.id} onClick={() => onPick(a.url)} className="group overflow-hidden border border-line-strong transition-colors hover:border-red" title={a.filename}>
+                <button type="button" key={a.id} onClick={() => onPick(a.url)} className="group overflow-hidden border border-line-strong transition-colors hover:border-red" title={a.filename}>
                   <span className="block aspect-video bg-cover bg-center transition-transform duration-300 group-hover:scale-105" style={{ backgroundImage: `url('${a.url}')` }} />
                 </button>
               ))}

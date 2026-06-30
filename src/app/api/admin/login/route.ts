@@ -10,7 +10,9 @@ export async function POST(req: Request) {
   let password = "";
   try {
     const body = await req.json();
-    email = String(body?.email ?? "").trim();
+    // Email is case-insensitive: the seed stores it lower-cased, so normalize
+    // the input too (mobile auto-capitalize must not lock the admin out).
+    email = String(body?.email ?? "").trim().toLowerCase();
     password = String(body?.password ?? "");
   } catch {
     return NextResponse.json({ ok: false, error: "invalid_json" }, { status: 400 });

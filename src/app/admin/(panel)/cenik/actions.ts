@@ -6,6 +6,10 @@ import { assertSession } from "@/lib/auth";
 
 function revalidate() {
   revalidatePath("/");
+  // Package data (kWp/battery/priceFrom) also drives the standalone savings
+  // calculator at /kalkulacka/ via getCalcConfig — that SSG page must be
+  // invalidated too, or it serves stale customer-facing prices.
+  revalidatePath("/kalkulacka/");
   revalidatePath("/admin/cenik");
 }
 

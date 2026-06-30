@@ -23,8 +23,10 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const offer = OfferSchema.parse(body);
-    await saveOffer(offer);
-    return NextResponse.json({ ok: true, offer });
+    // saveOffer may return a NEW id (when cloning a vzor-* sample) — return the
+    // saved offer so the editor can rebind to the freshly created record.
+    const saved = await saveOffer(offer);
+    return NextResponse.json({ ok: true, offer: saved });
   } catch (err) {
     return NextResponse.json({ ok: false, error: String(err) }, { status: 422 });
   }

@@ -1,4 +1,5 @@
 import "server-only";
+import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
 import { OfferSchema, type Offer } from "./schema";
@@ -55,7 +56,15 @@ export async function getOffer(id: string): Promise<Offer | null> {
 }
 
 export async function saveOffer(offer: Offer): Promise<Offer> {
-  const parsed = OfferSchema.parse(offer);
+  let parsed = OfferSchema.parse(offer);
+
+  // Built-in vzor-* samples live only in code and must never be written to the
+  // DB (a row would permanently shadow the sample AND be undeletable — the
+  // delete paths refuse vzor-* ids). Editing a sample therefore CLONES it into
+  // a fresh, fully-deletable offer instead of overwriting the example.
+  if (isSampleId(parsed.id)) {
+    parsed = { ...parsed, id: `nabidka-${nanoid(8)}` };
+  }
 
   const scalars = {
     number: parsed.number ?? "",

@@ -74,7 +74,7 @@ export function CropModal({ src, mime, onConfirm, onUseOriginal, onCancel }: {
       <div className="relative flex max-h-[90vh] w-full max-w-2xl flex-col border border-line-strong bg-surface">
         <div className="flex items-center justify-between border-b border-line px-5 py-4">
           <span className="text-[13px] font-bold uppercase tracking-[0.12em] text-ink">Upravit obrázek</span>
-          <button onClick={onCancel} className="grid h-9 w-9 place-items-center text-ink-muted hover:text-ink" aria-label="Zavřít"><X size={18} /></button>
+          <button type="button" onClick={onCancel} className="grid h-9 w-9 place-items-center text-ink-muted hover:text-ink" aria-label="Zavřít"><X size={18} /></button>
         </div>
 
         <div className="relative h-[52vh] min-h-72 bg-base">
@@ -95,7 +95,7 @@ export function CropModal({ src, mime, onConfirm, onUseOriginal, onCancel }: {
           <div className="mb-3 flex flex-wrap items-center gap-1.5">
             <span className="mr-1 text-[11px] font-semibold uppercase tracking-wide text-ink-dim">Poměr:</span>
             {ASPECTS.map((a) => (
-              <button key={a.label} onClick={() => setAspect(a.value)} className={`border px-2.5 py-1 text-[11.5px] font-bold ${aspect === a.value ? "border-red text-red-bright" : "border-line-strong text-ink-muted hover:text-ink"}`}>{a.label}</button>
+              <button type="button" key={a.label} onClick={() => setAspect(a.value)} className={`border px-2.5 py-1 text-[11.5px] font-bold ${aspect === a.value ? "border-red text-red-bright" : "border-line-strong text-ink-muted hover:text-ink"}`}>{a.label}</button>
             ))}
           </div>
           <div className="mb-4 flex items-center gap-3">
@@ -103,10 +103,10 @@ export function CropModal({ src, mime, onConfirm, onUseOriginal, onCancel }: {
             <input type="range" min={1} max={4} step={0.01} value={zoom} onChange={(e) => setZoom(Number(e.target.value))} className="w-full accent-red" aria-label="Přiblížení" />
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <button onClick={confirm} disabled={busy} className="inline-flex items-center gap-2 bg-red px-4 py-2.5 text-[12px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-red-dark disabled:opacity-60">
+            <button type="button" onClick={confirm} disabled={busy} className="inline-flex items-center gap-2 bg-red px-4 py-2.5 text-[12px] font-bold uppercase tracking-wide text-white transition-colors hover:bg-red-dark disabled:opacity-60">
               {busy ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Oříznout a nahrát
             </button>
-            <button onClick={onUseOriginal} disabled={busy} className="border border-line-strong px-4 py-2.5 text-[12px] font-bold uppercase tracking-wide text-ink-muted transition-colors hover:border-white hover:text-ink disabled:opacity-60">
+            <button type="button" onClick={onUseOriginal} disabled={busy} className="border border-line-strong px-4 py-2.5 text-[12px] font-bold uppercase tracking-wide text-ink-muted transition-colors hover:border-white hover:text-ink disabled:opacity-60">
               Použít celý obrázek
             </button>
             <span className="ml-auto text-[11.5px] text-ink-dim">Táhněte pro posun · kolečko/posuvník přiblíží</span>

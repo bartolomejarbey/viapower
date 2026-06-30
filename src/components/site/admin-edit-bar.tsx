@@ -123,6 +123,12 @@ export function AdminEditBar() {
     window.location.href = pathname; // drop ?edit=1
   }
 
+  // Same guard for the bar's in-app navigation links (they leave the live page,
+  // unmounting the bar) — otherwise unsaved edits vanish without warning.
+  function guardNav(e: React.MouseEvent) {
+    if (Object.keys(changesRef.current).length > 0 && !confirm("Máte neuložené změny. Opravdu odejít bez uložení?")) e.preventDefault();
+  }
+
   if (!on) return null;
 
   const changeCount = Object.keys(changes).length;
@@ -144,12 +150,12 @@ export function AdminEditBar() {
           </button>
         )}
         {isCmsBlockPage && (
-          <Link href={editorHref} className="inline-flex items-center gap-1.5 border border-line-strong px-3 py-1.5 text-[11px] font-semibold text-ink-muted transition-colors hover:border-red hover:text-ink">
+          <Link href={editorHref} onClick={guardNav} className="inline-flex items-center gap-1.5 border border-line-strong px-3 py-1.5 text-[11px] font-semibold text-ink-muted transition-colors hover:border-red hover:text-ink">
             <FileText size={13} /> Editor stránky
           </Link>
         )}
-        <BarLink href="/admin/" icon={LayoutDashboard} label="Admin" />
-        <BarLink href="/admin/nastaveni/" icon={Settings} label="Texty" />
+        <BarLink href="/admin/" icon={LayoutDashboard} label="Admin" onClick={guardNav} />
+        <BarLink href="/admin/nastaveni/" icon={Settings} label="Texty" onClick={guardNav} />
         <button onClick={exit} className="inline-flex items-center gap-1.5 border border-line-strong px-3 py-1.5 text-[11px] font-semibold text-ink-muted transition-colors hover:border-white hover:text-ink">
           <X size={13} /> Ukončit
         </button>
@@ -160,7 +166,8 @@ export function AdminEditBar() {
           onPick={(url) => {
             setChanges((c) => ({ ...c, [imgTarget.key]: url }));
             const el = imgTarget.el;
-            const img = el.querySelector("img");
+            // data-edit-img may sit on a wrapper OR directly on the <img> (e.g. footer logo).
+            const img = el.tagName === "IMG" ? (el as HTMLImageElement) : el.querySelector("img");
             if (img) { img.removeAttribute("srcset"); img.removeAttribute("sizes"); img.src = url; }
             const bg = el.querySelector<HTMLElement>('[style*="background-image"]') ?? el;
             if (bg.style.backgroundImage) bg.style.backgroundImage = `url('${url}')`;
@@ -173,9 +180,9 @@ export function AdminEditBar() {
   );
 }
 
-function BarLink({ href, icon: Icon, label }: { href: string; icon: React.ComponentType<{ size?: number }>; label: string }) {
+function BarLink({ href, icon: Icon, label, onClick }: { href: string; icon: React.ComponentType<{ size?: number }>; label: string; onClick?: (e: React.MouseEvent) => void }) {
   return (
-    <Link href={href} className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold text-ink-muted transition-colors hover:bg-red-soft hover:text-ink">
+    <Link href={href} onClick={onClick} className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold text-ink-muted transition-colors hover:bg-red-soft hover:text-ink">
       <Icon size={13} /> {label}
     </Link>
   );

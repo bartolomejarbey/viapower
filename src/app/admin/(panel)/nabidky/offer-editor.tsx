@@ -39,9 +39,18 @@ export function OfferEditor({ offer }: { offer: Offer }) {
       try {
         const res = await fetch("/api/nabidky/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(o) });
         if (res.ok) {
+          const d = await res.json().catch(() => null);
+          const newId = d?.offer?.id as string | undefined;
           setSaved(true);
           setTimeout(() => setSaved(false), 1800);
-          router.refresh();
+          if (newId && newId !== o.id) {
+            // a built-in sample was cloned into a brand-new offer — rebind the
+            // editor (state + URL) to it so further edits update it in place.
+            setO((c) => ({ ...c, id: newId }));
+            router.replace(`/admin/nabidky/${newId}/`);
+          } else {
+            router.refresh();
+          }
         } else {
           const d = await res.json().catch(() => null);
           setError(d?.error ? `Uložení selhalo: ${String(d.error).slice(0, 160)}` : "Uložení selhalo.");

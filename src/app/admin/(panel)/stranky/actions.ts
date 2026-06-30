@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { assertSession } from "@/lib/auth";
 import { slugify } from "@/lib/utils";
-import { categorize, cleanTitle, getMarkdown, getPageByPath } from "@/lib/content";
+import { categorize, categoryLabel, cleanTitle, getMarkdown, getPageByPath } from "@/lib/content";
 import { BLOCK_DEF } from "@/lib/blocks";
 import { IMPORTABLE } from "./importable";
 
@@ -33,7 +33,7 @@ export async function importPageFromPath(path: string): Promise<string> {
   const title = cleanTitle(migrated);
   const html = mdToHtml(getMarkdown(migrated));
   const seeds: { type: string; data: string }[] = [
-    { type: "hero", data: JSON.stringify({ ...BLOCK_DEF.hero.make(), eyebrow: categorize(path), title, sub: migrated.metaDescription ?? "" }) },
+    { type: "hero", data: JSON.stringify({ ...BLOCK_DEF.hero.make(), eyebrow: categoryLabel(categorize(path)), title, sub: migrated.metaDescription ?? "" }) },
     { type: "richtext", data: JSON.stringify({ html, bg: "base" }) },
   ];
   if (migrated.packages?.length) {

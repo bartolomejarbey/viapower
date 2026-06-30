@@ -30,7 +30,7 @@ const SETTINGS: Record<string, unknown> = {
 };
 
 async function main() {
-  const email = process.env.ADMIN_EMAIL || "info@viapower.cz";
+  const email = (process.env.ADMIN_EMAIL || "info@viapower.cz").trim().toLowerCase();
   const password = process.env.ADMIN_PASSWORD || "viapower-admin";
   await db.user.upsert({
     where: { email },

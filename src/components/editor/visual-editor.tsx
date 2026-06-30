@@ -18,7 +18,7 @@ import {
 import { savePage, deletePage, type PageMeta } from "@/app/admin/(panel)/stranky/actions";
 import { MediaPicker } from "@/components/editor/media-picker";
 import { EditableSection, type Data } from "@/components/editor/editor-section";
-import { BLOCK_DEFS, BLOCK_DEF, getLayout, widthClass, type BlockType, type WidthPreset, type Layout } from "@/lib/blocks";
+import { BLOCK_DEFS, BLOCK_DEF, getLayout, widthClass, bgClass, padClass, type BlockType, type BlockBg, type WidthPreset, type Layout } from "@/lib/blocks";
 
 // Per-type natural width — mirrors section-renderer so the canvas matches the live site.
 const CANVAS_WIDTH: Record<string, WidthPreset> = { richtext: "narrow", steps: "narrow", cta: "normal", leadform: "normal" };
@@ -280,6 +280,13 @@ function CanvasBlock({ block, selected, onSelect, onChange, onRemove, onDuplicat
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: block.id });
   const known = !!BLOCK_DEF[block.type];
+  // Mirror the public band so the inspector's "Pozadí" + "Odsazení" controls
+  // actually preview in the canvas. Skip blocks that render their own chrome
+  // (hero has its own image band; spacer is just height).
+  const layout = getLayout(block.data);
+  const hasBand = block.type !== "hero" && block.type !== "spacer";
+  const bgPreview = hasBand ? bgClass((block.data.bg as BlockBg | undefined) ?? "base") : "";
+  const padPreview = hasBand && layout && (layout.padTop || layout.padBottom) ? padClass(layout, "") : "";
   const btn = "grid h-7 w-7 place-items-center border border-line-strong bg-elevated text-ink-dim transition-colors hover:text-ink disabled:opacity-30 disabled:hover:text-ink-dim";
   return (
     <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }}
@@ -297,8 +304,10 @@ function CanvasBlock({ block, selected, onSelect, onChange, onRemove, onDuplicat
           <button onClick={(e) => { e.stopPropagation(); onRemove(); }} className="grid h-7 w-7 place-items-center border border-red/40 bg-elevated text-red-bright hover:bg-red hover:text-white" aria-label="Smazat"><Trash2 size={13} /></button>
         </div>
         {known ? (
-          <div className={cn("mx-auto", widthClass(getLayout(block.data), CANVAS_WIDTH[block.type] ?? "wide"))}>
-            <EditableSection type={block.type} data={block.data} onChange={onChange} onPickImage={onPickImage} />
+          <div className={cn(bgPreview, padPreview)}>
+            <div className={cn("mx-auto", widthClass(layout, CANVAS_WIDTH[block.type] ?? "wide"))}>
+              <EditableSection type={block.type} data={block.data} onChange={onChange} onPickImage={onPickImage} />
+            </div>
           </div>
         ) : (
           <p className="border border-dashed border-line-strong p-4 text-[13px] text-ink-dim">Tento blok („{block.type}“) tento editor nezná, ale zůstane na stránce zachován.</p>

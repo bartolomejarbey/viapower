@@ -62,8 +62,10 @@ function ImageField({ url, onPick, onClear, className, label = "Vybrat obrázek"
   );
 }
 
-function SectionHead({ d, set }: { d: Data; set: SetFn }) {
-  const center = isCenter(getLayout(d), d.align === "center");
+function SectionHead({ d, set, defaultCenter = false }: { d: Data; set: SetFn; defaultCenter?: boolean }) {
+  // Mirror the public renderer's per-type centering fallback (section-renderer
+  // centers pricing/testimonials/faq by default) so the canvas matches the site.
+  const center = isCenter(getLayout(d), d.align === "center" || defaultCenter);
   const ctr = center ? " text-center" : "";
   return (
     <div className={cn("mb-5", center && "mx-auto max-w-3xl text-center")}>
@@ -246,7 +248,7 @@ export function EditableSection({ type, data, onChange, onPickImage }: { type: B
       const items = list<Data>(d.items);
       return (
         <div>
-          <SectionHead d={d} set={set} />
+          <SectionHead d={d} set={set} defaultCenter />
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {items.map((it, i) => (
               <div key={i} className="group/item relative border border-line-strong bg-card p-5 pr-20">
@@ -271,7 +273,7 @@ export function EditableSection({ type, data, onChange, onPickImage }: { type: B
       const items = list<Data>(d.items);
       return (
         <div>
-          <SectionHead d={d} set={set} />
+          <SectionHead d={d} set={set} defaultCenter />
           <div className="flex flex-col gap-2">
             {items.map((it, i) => (
               <div key={i} className="group/item relative border border-line-strong bg-card p-4 pr-24">
@@ -290,7 +292,7 @@ export function EditableSection({ type, data, onChange, onPickImage }: { type: B
       const items = list<Data>(d.items);
       return (
         <div>
-          <SectionHead d={d} set={set} />
+          <SectionHead d={d} set={set} defaultCenter />
           <div className="mt-3 grid gap-3 lg:grid-cols-3">
             {items.map((p, i) => {
               const specs = list<[string, string]>(p.specs);

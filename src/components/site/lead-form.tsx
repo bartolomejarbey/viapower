@@ -24,6 +24,7 @@ export function LeadForm({ source = "web", withMessage = false, t }: { source?: 
           phone: form.get("phone"),
           email: form.get("email"),
           message: form.get("message") ?? "",
+          company: form.get("company") ?? "", // honeypot — must stay empty
           source,
         }),
       });
@@ -62,6 +63,11 @@ export function LeadForm({ source = "web", withMessage = false, t }: { source?: 
       <h3 className="mb-6 flex items-center gap-2 font-mono text-[12px] font-semibold uppercase tracking-[0.16em] text-red-bright">
         <span className="h-2 w-2 bg-red" /> {c("form.title", "Poptávkový formulář")}
       </h3>
+      {/* Honeypot — hidden from real users; bots that fill it are dropped server-side. */}
+      <div aria-hidden className="absolute left-[-9999px] top-0 h-0 w-0 overflow-hidden" style={{ position: "absolute" }}>
+        <label htmlFor="lf-company">Firma (nevyplňujte)</label>
+        <input id="lf-company" name="company" type="text" tabIndex={-1} autoComplete="off" />
+      </div>
       <Field name="name" label={c("form.f.name", "Jméno")} type="text" placeholder="Jak vás máme oslovit?" />
       <Field name="phone" label={c("form.f.phone", "Telefon")} type="tel" placeholder="+420 ___ ___ ___" />
       <Field name="email" label={c("form.f.email", "E-mail")} type="email" placeholder="vas@email.cz" />

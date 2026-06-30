@@ -7,7 +7,9 @@ import { DEFAULT_PACKAGES, num, type CalcConfig } from "@/lib/calc";
 export async function getCalcConfig(): Promise<CalcConfig> {
   const [s, rows] = await Promise.all([
     getSettings(),
-    db.pricePackage.findMany({ orderBy: { order: "asc" } }),
+    // Only published packages — mirror getPackagesPublic() so the "publikováno"
+    // toggle hides a package from the calculator exactly as it does the homepage.
+    db.pricePackage.findMany({ where: { published: true }, orderBy: { order: "asc" } }),
   ]);
   const packages = rows
     .map((p) => ({ name: p.name, kwp: num(p.powerKwp, 0), battery: num(p.battery, 0), price: p.priceFrom ?? 0 }))

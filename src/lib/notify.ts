@@ -23,6 +23,10 @@ export async function notifyLead(lead: LeadNotice): Promise<void> {
     tasks.push(
       fetch("https://api.resend.com/emails", {
         method: "POST",
+        // Bound the wait: a hung provider must not stall the (awaited) request
+        // into a platform timeout, which would surface a false error to the
+        // visitor and cause duplicate re-submits even though the lead is saved.
+        signal: AbortSignal.timeout(5000),
         headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           from: process.env.LEAD_FROM_EMAIL || "Viapower web <onboarding@resend.dev>",
@@ -42,6 +46,7 @@ export async function notifyLead(lead: LeadNotice): Promise<void> {
     tasks.push(
       fetch(hook, {
         method: "POST",
+        signal: AbortSignal.timeout(5000),
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           text: `Nová poptávka: ${lead.name} · ${lead.phone} · ${lead.email} (${lead.source || "web"})`,

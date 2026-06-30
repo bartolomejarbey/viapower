@@ -45,9 +45,16 @@ export function SortableList<T extends { id: string }>({
     const oldI = order.findIndex((i) => i.id === active.id);
     const newI = order.findIndex((i) => i.id === over.id);
     if (oldI < 0 || newI < 0) return;
+    const prev = order;
     const next = arrayMove(order, oldI, newI);
-    setOrder(next);
-    void onReorder(next.map((i) => i.id));
+    setOrder(next); // optimistic
+    // If the server reorder fails (e.g. expired session, concurrent delete),
+    // roll the canvas back to the last known-good order instead of silently
+    // keeping a fake order that vanishes on the next reload.
+    Promise.resolve(onReorder(next.map((i) => i.id))).catch((err) => {
+      console.error("[reorder] failed — reverting", err);
+      setOrder(prev);
+    });
   }
 
   // Avoid SSR/CSR markup mismatch from dnd-kit's generated ids: render a plain
